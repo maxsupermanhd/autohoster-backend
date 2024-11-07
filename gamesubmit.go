@@ -217,15 +217,15 @@ func sendReplayToStorage(inst *instance) {
 		discordPostError("Failed to find replay: %s (instance %d)", err.Error(), inst.Id)
 		return
 	}
-	err = copyReplayToStorage(inst, replayPath)
-	if err != nil {
-		inst.logger.Printf("Failed to copy replay: %s", err.Error())
-		discordPostError("Failed to copy replay: %s (instance %d)", err.Error(), inst.Id)
-	}
 	err = saveReplayToDatabase(inst, replayPath)
 	if err != nil {
 		inst.logger.Printf("Failed to save replay to database: %s", err.Error())
 		discordPostError("Failed to save replay to database: %s (instance %d)", err.Error(), inst.Id)
+		err = copyReplayToStorage(inst, replayPath)
+		if err != nil {
+			inst.logger.Printf("Failed to copy replay: %s", err.Error())
+			discordPostError("Failed to copy replay: %s (instance %d)", err.Error(), inst.Id)
+		}
 	}
 }
 
