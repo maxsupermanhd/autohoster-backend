@@ -55,12 +55,13 @@ func webHandleInstances(w http.ResponseWriter, r *http.Request) {
 			cfgs = append(cfgs, a)
 		}
 		inst := map[string]any{
-			"state":    v.state.Load(),
-			"pid":      v.Pid,
-			"game id":  v.GameId,
-			"lobby id": v.LobbyId,
-			"settings": v.Settings,
-			"cfgs":     cfgs,
+			"state":      v.state.Load(),
+			"pid":        v.Pid,
+			"game id":    v.GameId,
+			"lobby id":   v.LobbyId,
+			"settings":   v.Settings,
+			"cfgs":       cfgs,
+			"roomStatus": v.RoomStatus,
 		}
 		ret[v.Id] = inst
 	}

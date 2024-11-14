@@ -7,6 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/maxsupermanhd/lac/v2"
 )
 
 var (
@@ -58,6 +60,7 @@ func allocateNewInstance() (inst *instance, err error) {
 		commands:       make(chan instanceCommand, 32),
 		OnJoinDispatch: map[string]joinDispatch{},
 		wg:             sync.WaitGroup{},
+		RoomStatus:     lac.NewConf(),
 	}
 
 	instances = append(instances, inst)

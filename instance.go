@@ -71,6 +71,7 @@ type instance struct {
 	stderr              *os.File
 	Pid                 int
 	recovered           bool
+	RoomStatus          lac.Conf
 	commands            chan instanceCommand
 	wg                  sync.WaitGroup
 }

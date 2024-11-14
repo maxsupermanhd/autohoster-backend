@@ -258,6 +258,19 @@ var (
 			return false
 		},
 	}, {
+		match:   hosterMessageMatchTypePrefixSuffix,
+		mPrefix: "__WZROOMSTATUS__",
+		mSuffix: "__ENDWZROOMSTATUS__",
+		fn: func(inst *instance, msg string) bool {
+			content := []byte(msg[16 : len(msg)-19])
+			err := inst.RoomStatus.SetFromBytesJSON(content)
+			if err != nil {
+				inst.logger.Printf("Failed to parse room status message: %s", err.Error())
+				return true
+			}
+			return false
+		},
+	}, {
 		match:   hosterMessageMatchTypePrefix,
 		mPrefix: "__DEBUGMODE__",
 		fn: func(inst *instance, msg string) bool {
