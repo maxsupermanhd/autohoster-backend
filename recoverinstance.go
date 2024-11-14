@@ -177,6 +177,7 @@ func recoverLoad(p string) (*instance, error) {
 		commands:       make(chan instanceCommand, 32),
 		OnJoinDispatch: map[string]joinDispatch{},
 		wg:             sync.WaitGroup{},
+		RoomStatus:     lac.NewConf(),
 	}
 	err = json.Unmarshal(b, &inst)
 	if err != nil {
