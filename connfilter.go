@@ -42,7 +42,7 @@ func joinCheck(inst *instance, ip string, name string, pubkey []byte, pubkeyB64 
 
 	// was votekicked
 	vtkdur := voteKickCheckRestricted(ip)
-	if vtkdur >= 0 {
+	if vtkdur > 0 {
 		vtkdurS := vtkdur.Round(time.Second).String()
 		if vtkdurS == "0s" {
 			vtkdurS = "1s"
