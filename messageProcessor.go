@@ -425,10 +425,10 @@ func messageHandlerProcessChat(inst *instance, msg string) bool {
 		discordPostError("Failed to log chat of instance `%d`: %s (%q: %q), was fed %q", inst.Id, err.Error(), string(msgname), string(msgcontent), origmsg)
 	}
 	if msgtype == "WZCHATCMD" && (string(msgcontent) == "/stat" || string(msgcontent) == "/stats") {
-		instWriteFmt(inst, `chat direct %s %s`, msgb64pubkey, "All Autohoster's games are available at the website: https://wz2100-autohost.net/games (with detailed dtatistics, charts and replay)")
+		instWriteFmt(inst, `chat bcast Game history of Autohoster is available at the website: https://wz2100-autohost.net/games (with detailed dtatistics, charts and replay)`)
 	}
-	if msgtype == "WZCHATCMD" && (strings.HasPrefix(string(msgcontent), "/votekick")) {
-		instWriteFmt(inst, `chat bcast %s`, "If you would like to become a part of Autohoster moderation team, feel free to contact us: https://wz2100-autohost.net/about#contact")
+	if msgtype == "WZCHATCMD" && (strings.HasPrefix(string(msgcontent), "/votekick ")) {
+		voteKickOnCommand(inst, msgpubkey, msgip, strings.TrimPrefix(string(msgcontent), "/votekick "))
 	}
 	return false
 }

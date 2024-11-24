@@ -175,6 +175,23 @@ func stringContainsSlices(str string, sl []string) bool {
 	return false
 }
 
+func stringOnlyContainsCaseInsensitive(check string, set string) bool {
+	s := strings.ToLower(set)
+	for _, c := range strings.ToLower(check) {
+		f := true
+		for _, t := range s {
+			if c == t {
+				f = false
+				break
+			}
+		}
+		if f {
+			return false
+		}
+	}
+	return true
+}
+
 func base64DecodeFields(vs ...any) error {
 	if len(vs) == 0 {
 		return nil

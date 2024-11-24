@@ -27,7 +27,7 @@ func joinCheck(inst *instance, ip string, name string, pubkey []byte, pubkeyB64 
 	jd.AllowChat = true
 	action = joinCheckActionLevelApprove
 
-	// stage 1 adolf/spam protection
+	// dolf/spam protection
 	if stringContainsSlices(strings.ToLower(name), tryCfgGetD(tryGetSliceStringGen("blacklist", "name"), []string{}, inst.cfgs...)) {
 		ecode, err := DbLogAction("%d [adolfmeasures] Join name %s triggered adolf suppression system, ip was %s", inst.Id, name, ip)
 		if err != nil {
@@ -40,7 +40,17 @@ func joinCheck(inst *instance, ip string, name string, pubkey []byte, pubkeyB64 
 			"Event ID: " + ecode
 	}
 
-	// stage 2 ban check
+	// was votekicked
+	vtkdur := voteKickCheckRestricted(ip)
+	if vtkdur >= 0 {
+		vtkdurS := vtkdur.Round(time.Second).String()
+		if vtkdurS == "0s" {
+			vtkdurS = "1s"
+		}
+		return jd, joinCheckActionLevelReject, "You got votekicked. You will be able to join back in " + vtkdurS + ". If you feel like it is being abused, contact administrators."
+	}
+
+	// ban check
 	var (
 		account          *int
 		banid            *int
@@ -89,7 +99,7 @@ limit 1`, pubkey).Scan(&account, &banid, &banissued, &banexpires, &banexpired, &
 		}
 	}
 
-	// stage 3 isp check
+	// isp check
 	if account == nil && !tryCfgGetD(tryGetBoolGen("allowNonLinkedHide"), false, inst.cfgs...) {
 		rsp, err := ISPchecker.Lookup(ip)
 		if err != nil {
@@ -109,7 +119,7 @@ limit 1`, pubkey).Scan(&account, &banid, &banissued, &banexpires, &banexpired, &
 		}
 	}
 
-	// stage 4 check room prefs
+	// check room prefs
 	allowNonLinkedJoin := tryCfgGetD(tryGetBoolGen("allowNonLinkedJoin"), true, inst.cfgs...)
 	if !allowNonLinkedJoin {
 		if account == nil {
@@ -135,7 +145,7 @@ limit 1`, pubkey).Scan(&account, &banid, &banissued, &banexpires, &banexpired, &
 		}
 	}
 
-	// stage 5 rate limit checks
+	// rate limit checks
 	asThrCnt := tryCfgGetD(tryGetIntGen("antiSpamThresholdCount"), 3, inst.cfgs...)
 	asThrDur := tryCfgGetD(tryGetIntGen("antiSpamThresholdDuration"), 3*24, inst.cfgs...)
 	if asThrCnt > 0 {
@@ -155,7 +165,7 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 		}
 	}
 
-	// stage 6 moved out check
+	// moved out check
 	if joincheckWasMovedOutGlobal.present(pubkeyB64, inst.Id) {
 		if action == joinCheckActionLevelApprove {
 			jd.Messages = append(jd.Messages, "You not allowed to participate in the game because moderator moved you out earlier")
@@ -163,14 +173,14 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 		}
 	}
 
-	// stage 7 ip based mute
+	// ip based mute
 	if account == nil {
 		if checkIPMatchesConfigs(inst, ip, "ipmute") {
 			jd.AllowChat = false
 		}
 	}
 
-	// stage 7 ip based playfilter
+	// ip based playfilter
 	if account == nil {
 		if checkIPMatchesConfigs(inst, ip, "ipnoplay") {
 			if action == joinCheckActionLevelApprove {
@@ -179,7 +189,7 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 		}
 	}
 
-	// stage 6 terminated account
+	// terminated account
 	var terminated bool
 	dbpool.QueryRow(context.Background(), `select terminated
 from accounts as a
