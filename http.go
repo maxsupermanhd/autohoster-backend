@@ -16,7 +16,8 @@ import (
 func routineWebServer(closechan <-chan struct{}) {
 	m := http.NewServeMux()
 	m.HandleFunc("/instances", webHandleInstances)
-	m.HandleFunc("/reload", webHandleReload)
+	m.HandleFunc("/config/reload", webHandleConfigReload)
+	m.HandleFunc("/config/get", webHandleConfigGet)
 	m.HandleFunc("/alive", webHandleAlive)
 	m.HandleFunc("/request", webHandleRequestRoom)
 	var wg sync.WaitGroup
@@ -78,16 +79,28 @@ func webHandleInstances(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("\n"))
 }
 
-func webHandleReload(w http.ResponseWriter, r *http.Request) {
+func webHandleConfigReload(w http.ResponseWriter, r *http.Request) {
 	err := cfg.SetFromFileJSON("config.json")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(err.Error() + "\n"))
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Config reloaded"))
 	w.Write([]byte("\n"))
+}
+
+func webHandleConfigGet(w http.ResponseWriter, _ *http.Request) {
+	b, err := cfg.MarshalJSON()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error() + "\n"))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
+	w.Write([]byte("\n\n"))
 }
 
 func webHandleAlive(w http.ResponseWriter, r *http.Request) {
