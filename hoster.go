@@ -117,7 +117,7 @@ func instanceRunner(inst *instance) {
 
 	exitchan := make(chan struct{})
 	pidcheckchan := make(chan struct{})
-	msgchan := make(chan string, 64)
+	msgchan := make(chan string, 512)
 
 	wg.Add(1)
 	go func() {
