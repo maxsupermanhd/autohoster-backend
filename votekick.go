@@ -37,7 +37,7 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 		instWriteFmt(inst, `chat bcast Votekick player ID prefix must be at least 3 characters long`)
 		return
 	}
-	if stringOnlyContainsCaseInsensitive(targetHash, "0123456789abcdef") {
+	if !stringOnlyContainsCaseInsensitive(targetHash, "0123456789abcdef") {
 		instWriteFmt(inst, `chat bcast Votekick provided player ID prefix is invalid`)
 		return
 	}
