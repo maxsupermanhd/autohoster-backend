@@ -128,25 +128,35 @@ func voteKickCheckRestricted(ip string) time.Duration {
 }
 
 func roomLookupHash(inst *instance, target string) (ip string) {
-	var pl []struct {
-		ip string
-		pk string
-	}
-	err := inst.RoomStatus.GetToStruct(&pl, "players")
-	if err != nil {
-		log.Printf("Failed to read room status: %s", err.Error())
+	pl, ok := inst.RoomStatus.GetSliceAny("players")
+	if !ok {
+		log.Println("votekick room status has no players slice")
 		return
 	}
-	for _, p := range pl {
-		pk, err := base64.StdEncoding.DecodeString(p.pk)
+	for _, psl := range pl {
+		p, ok := psl.(map[string]any)
+		if !ok {
+			log.Println("votekick room status wrong item in players slice")
+			continue
+		}
+		pkm, ok := p["pk"].(string)
+		if !ok {
+			continue
+		}
+		pk, err := base64.StdEncoding.DecodeString(pkm)
 		if err != nil {
-			log.Printf("Failed to decode base64 pk: %s", err.Error())
+			log.Printf("votekick ailed to decode base64 pk: %s", err.Error())
 			continue
 		}
 		hashBytes := sha256.Sum256(pk)
 		if hex.EncodeToString(hashBytes[:]) == target {
 			if ip == "" {
-				ip = p.ip
+				ipm, ok := p["ip"].(string)
+				if ok {
+					ip = ipm
+				} else {
+					log.Println("votekick ip not found")
+				}
 			} else {
 				ip = "multiple"
 				return
