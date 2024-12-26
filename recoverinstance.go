@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -179,7 +180,9 @@ func recoverLoad(p string) (*instance, error) {
 		wg:             sync.WaitGroup{},
 		RoomStatus:     lac.NewConf(),
 	}
-	err = json.Unmarshal(b, &inst)
+	d := json.NewDecoder(bytes.NewReader(b))
+	d.UseNumber()
+	err = d.Decode(&inst)
 	if err != nil {
 		return nil, err
 	}
