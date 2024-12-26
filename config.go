@@ -3,7 +3,6 @@ package main
 import (
 	"autohoster-backend/ispcheck"
 	"autohoster-backend/mapstorage"
-	"errors"
 	"log"
 
 	"github.com/maxsupermanhd/lac/v2"
@@ -11,8 +10,6 @@ import (
 
 var (
 	cfg lac.Conf
-
-	errNoKey = errors.New("key not found in config")
 
 	ms         *mapstorage.Mapstorage
 	ISPchecker *ispcheck.ISPChecker

@@ -115,22 +115,22 @@ var (
 
 			case joinCheckActionLevelApprove:
 				inst.logger.Printf("Action approve for %q %q", msgip, msgname)
-				instWriteFmt(inst, "join approve "+msgjoinid+" 7 "+reason)
+				instWriteFmt(inst, "join approve %s 7 %s", msgjoinid, reason)
 				inst.OnJoinDispatch[msgb64pubkey] = jd
 
 			case joinCheckActionLevelApproveSpec:
 				inst.logger.Printf("Action approvespec for %q %q", msgip, msgname)
-				instWriteFmt(inst, "join approvespec "+msgjoinid+" 7 "+reason)
+				instWriteFmt(inst, "join approvespec %s 7 %s", msgjoinid, reason)
 				inst.OnJoinDispatch[msgb64pubkey] = jd
 
 			case joinCheckActionLevelReject:
 				inst.logger.Printf("Action reject for %q %q", msgip, msgname)
-				instWriteFmt(inst, "join reject "+msgjoinid+" 7 "+reason)
+				instWriteFmt(inst, "join reject %s 7 %s", msgjoinid, reason)
 
 			case joinCheckActionLevelBan:
 				inst.logger.Printf("Action ban for %q %q", msgip, msgname)
-				instWriteFmt(inst, "join reject "+msgjoinid+" 7 "+reason)
-				instWriteFmt(inst, "ban ip "+msgip)
+				instWriteFmt(inst, "join reject %s 7 %s", msgjoinid, reason)
+				instWriteFmt(inst, "ban ip %s", msgip)
 			}
 			return false
 		},

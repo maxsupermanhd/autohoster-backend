@@ -166,11 +166,11 @@ func submitFrame(inst *instance, reportBytes []byte) {
 		errMsgToSend := fmt.Sprintf("SUS tag while adding game: %s (gid %d) (instance %d)", tag, inst.GameId, inst.Id)
 		errMsg, ok := frameErrorSuspends[inst.Id]
 		if !ok {
-			discordPostError(errMsgToSend)
+			discordPostError("%s", errMsgToSend)
 			frameErrorSuspends[inst.Id] = errMsgToSend
 		} else {
 			if errMsg != errMsgToSend {
-				discordPostError(errMsgToSend)
+				discordPostError("%s", errMsgToSend)
 				frameErrorSuspends[inst.Id] = errMsgToSend
 			}
 		}

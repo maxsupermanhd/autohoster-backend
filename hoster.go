@@ -209,7 +209,7 @@ msgloop:
 					inst.logger.Printf("wrong icBroadcast data type! (%t)", cmd.data)
 					continue
 				}
-				instWriteFmt(inst, "chat bcast "+nonAlphanumericRegex.ReplaceAllString(s, ""))
+				instWriteFmt(inst, "chat bcast %s", nonAlphanumericRegex.ReplaceAllString(s, ""))
 			case icShutdown:
 				inst.logger.Println("exit sent")
 				instWriteFmt(inst, "shutdown now")
