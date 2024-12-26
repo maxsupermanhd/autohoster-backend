@@ -7,7 +7,7 @@ toolchain go1.22.4
 require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/maxsupermanhd/go-wz v0.0.0-20240707192712-35af664a298a
-	github.com/maxsupermanhd/lac/v2 v2.0.0-20241114152651-93e179d56697
+	github.com/maxsupermanhd/lac/v2 v2.0.0-20241226002141-73ebbaa7ea7e
 )
 
 require (
