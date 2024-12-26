@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"log"
 	"maps"
+	"strings"
 	"sync"
 	"time"
 )
@@ -149,7 +150,7 @@ func roomLookupHash(inst *instance, target string) (ip string) {
 			continue
 		}
 		hashBytes := sha256.Sum256(pk)
-		if hex.EncodeToString(hashBytes[:]) == target {
+		if strings.HasPrefix(hex.EncodeToString(hashBytes[:]), target) {
 			if ip == "" {
 				ipm, ok := p["ip"].(string)
 				if ok {
