@@ -51,13 +51,13 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 		instWriteFmt(inst, `chat bcast Provide longer votekick player ID, collision detected`)
 		return
 	}
-	vlt := voteKickGetVoteLifetime(inst, 600)
+	vlt := voteKickGetVoteLifetime()
 	bandur := voteKickGetBanDuration(inst, 600)
 	voteKickLock.Lock()
 	defer voteKickLock.Unlock()
 
 	maps.DeleteFunc(voteKickVotes, func(k string, v voteKickVote) bool {
-		return time.Until(v.when) <= 0
+		return time.Until(v.when.Add(vlt)) <= 0
 	})
 
 	v, ok := voteKickVotes[fromIP]
@@ -93,8 +93,8 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 	}
 }
 
-func voteKickGetVoteLifetime(inst *instance, d int) time.Duration {
-	return time.Duration(tryCfgGetD(tryGetIntGen("votekick", "voteLifetimeSeconds"), d, inst.cfgs...)) * time.Second
+func voteKickGetVoteLifetime() time.Duration {
+	return time.Duration(cfg.GetDInt(600, "votekickVoteLifetimeSeconds")) * time.Second
 }
 
 func voteKickGetBanDuration(inst *instance, d int) time.Duration {
