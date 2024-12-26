@@ -42,7 +42,7 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 		instWriteFmt(inst, `chat bcast Votekick provided player ID prefix is invalid`)
 		return
 	}
-	ip := roomLookupHash(inst, targetHash)
+	ip, name := roomLookupHash(inst, targetHash)
 	if ip == "" {
 		instWriteFmt(inst, `chat bcast Votekick player not found`)
 		return
@@ -85,7 +85,7 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 	}
 
 	hits := voteKickCheckIPNOLOCK(ip, vlt)
-	instWriteFmt(inst, `chat bcast Votekick of player %s: votes %d/%d`, targetHash, hits, req)
+	instWriteFmt(inst, `chat bcast Votekick of player %s (%q): votes %d/%d`, targetHash, strings.ReplaceAll(name, "\n", ""), hits, req)
 	if hits >= req {
 		instWriteFmt(inst, `ban ip %s You got votekicked. You will be able to join back in %s. If you feel like it is being abused, contact administrators.`, ip, bandur)
 		instWriteFmt(inst, `unban ip %s`, ip)
@@ -128,7 +128,7 @@ func voteKickCheckRestricted(ip string) time.Duration {
 	return time.Until(t)
 }
 
-func roomLookupHash(inst *instance, target string) (ip string) {
+func roomLookupHash(inst *instance, target string) (ip string, name string) {
 	pl, ok := inst.RoomStatus.GetSliceAny("players")
 	if !ok {
 		log.Println("votekick room status has no players slice")
@@ -155,6 +155,7 @@ func roomLookupHash(inst *instance, target string) (ip string) {
 				ipm, ok := p["ip"].(string)
 				if ok {
 					ip = ipm
+					name, _ = p["name"].(string)
 				} else {
 					log.Println("votekick ip not found")
 				}
