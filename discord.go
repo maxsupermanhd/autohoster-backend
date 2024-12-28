@@ -32,23 +32,19 @@ func routineDiscordErrorReporter() {
 			if lastAggregate == "" {
 				continue
 			}
-			discordSendError(lastAggregate)
+			webhookUrl, ok := cfg.GetString("discordErrorsWebhook")
+			if !ok {
+				log.Println("Errors discord webhook not set!!!")
+				return
+			}
+			if len(lastAggregate) < 1995 {
+				discordSendErrorWithContent(webhookUrl, lastAggregate)
+			} else {
+				discordSendErrorWithFile(webhookUrl, lastAggregate)
+			}
 			lastAggregate = ""
 			// lastMessage = time.Now()
 		}
-	}
-}
-
-func discordSendError(content string) {
-	webhookUrl, ok := cfg.GetString("discordErrorsWebhook")
-	if !ok {
-		log.Println("Errors discord webhook not set!!!")
-		return
-	}
-	if len(content) < 1995 {
-		discordSendErrorWithContent(webhookUrl, content)
-	} else {
-		discordSendErrorWithFile(webhookUrl, content)
 	}
 }
 
