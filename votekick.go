@@ -32,6 +32,7 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 	}
 	if !checkPkeyHasAccount(fromPkey) {
 		instWriteFmt(inst, `chat bcast Votekick avaliable only to registered and linked players.`)
+		instWriteFmt(inst, `chat bcast Link your identity on https://wz2100-autohost.net/wzlink`)
 		return
 	}
 	if len(targetHash) < 3 {

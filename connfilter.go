@@ -125,7 +125,7 @@ limit 1`, pubkey).Scan(&account, &banid, &banissued, &banexpires, &banexpired, &
 		if account == nil {
 			return jd, joinCheckActionLevelReject, "You can not join this game.\\n\\n" +
 				"You must join with linked player identity. Link one at:\\n" +
-				"https://wz2100-autohost.net/wzlinkcheck\\n\\n" +
+				"https://wz2100-autohost.net/wzlink\\n\\n" +
 				"Do not bother admins/moderators about this."
 		}
 	}
@@ -133,6 +133,7 @@ limit 1`, pubkey).Scan(&account, &banid, &banissued, &banexpires, &banexpired, &
 	if !allowNonLinkedPlay {
 		if account == nil {
 			jd.Messages = append(jd.Messages, "You are not allowed to participate in this game due to being not registered")
+			jd.Messages = append(jd.Messages, "Link your identity at https://wz2100-autohost.net/wzlink")
 			action = joinCheckActionLevelApproveSpec
 		}
 	}
@@ -140,7 +141,7 @@ limit 1`, pubkey).Scan(&account, &banid, &banissued, &banexpires, &banexpired, &
 	if !allowNonLinkedChat {
 		if account == nil {
 			jd.Messages = append(jd.Messages, "You are not allowed to chat in this room due to being not registered")
-			jd.Messages = append(jd.Messages, "Link your identity on https://wz2100-autohost.net/wzlinkcheck")
+			jd.Messages = append(jd.Messages, "Link your identity on https://wz2100-autohost.net/wzlink")
 			jd.AllowChat = false
 		}
 	}
