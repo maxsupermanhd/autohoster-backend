@@ -251,7 +251,7 @@ var (
 				return true
 			}
 			reportContent := []byte(msg[18 : len(msg)-21])
-			inst.logger.Printf("report (len %d) (gid %d)", len(reportContent), inst.GameId)
+			inst.logger.Printf("report (len %d) (gid %d) (final)", len(reportContent), inst.GameId)
 			if tryCfgGetD(tryGetBoolGen("submitGames"), true, inst.cfgs...) {
 				submitFinalReport(inst, reportContent)
 			}
