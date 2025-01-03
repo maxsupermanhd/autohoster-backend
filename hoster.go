@@ -323,7 +323,7 @@ func addEventLog(msg string) error {
 }
 
 func instWriteFmt(inst *instance, format string, args ...any) {
-	str := fmt.Sprintf(format, args...) + "\n"
+	str := "\n" + fmt.Sprintf(format, args...) + "\n"
 	n, err := inst.stdin.WriteString(str)
 	if err != nil {
 		inst.logger.Printf("Failed to write string %q to the stdin: %s", str, err.Error())
