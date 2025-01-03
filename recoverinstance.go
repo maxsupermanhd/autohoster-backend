@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -61,26 +62,31 @@ func recoverRunner(instpath string) bool {
 		return false
 	}
 	if inst.Id != instid {
-		log.Printf("Instance from path %q has different id (%d) than path (%d)", instpath, inst.Id, instid)
+		inst.logger.Printf("Recovering instance from path %q has different id (%d) than path (%d)", instpath, inst.Id, instid)
+		discordPostError("Recovering instance from path %q has different id (%d) than path (%d)\n%s", instpath, inst.Id, instid, string(debug.Stack()))
 		return false
 	}
 	if !isPidCmdlineAccurate(inst) {
-		log.Printf("Instance from path %q has invalid cmdline, assuming dead", instpath)
+		inst.logger.Printf("Recovering instance from path %q has invalid cmdline, assuming dead", instpath)
 		return true
 	}
 	if !isPidAlive(inst.Pid) {
-		log.Printf("Instance from path %q seems to be not alive", instpath)
+		inst.logger.Printf("Recovering instance from path %q seems to be not alive", instpath)
 		return true
 	}
 	if !insertInstance(inst) {
-		log.Printf("Failed to insert instance with id %d", instid)
+		inst.logger.Printf("Recovering failed to insert instance with id %d", instid)
 		return false
 	}
 	err = openPipes(inst)
 	if err != nil {
-		log.Printf("Failed to open pipes for instance %q: %s", instpath, err)
+		inst.logger.Printf("Recovering failed to open pipes for instance %q: %s", instpath, err)
 		releaseInstance(inst)
 		return false
+	}
+	_, err = inst.stdin.WriteString(`\n\nstatus\n`)
+	if err != nil {
+		inst.logger.Printf("Recovering failed to send status for recovering instance %q: %s", instpath, err)
 	}
 	go instanceRunner(inst)
 	return false
