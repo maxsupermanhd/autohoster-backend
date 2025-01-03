@@ -51,9 +51,19 @@ func openPipes(inst *instance) error {
 		inst.logger.Printf("Error opening stdout pipe: %s", err.Error())
 		return err
 	}
+	err = inst.stdout.SetDeadline(time.Now().Add(20 * time.Second))
+	if err != nil {
+		inst.logger.Println("Failed to set deadline for stdout:", err)
+		return err
+	}
 	inst.stderr, err = os.OpenFile(path.Join(inst.ConfDir, "stderr.pipe"), os.O_RDWR, os.ModeNamedPipe)
 	if err != nil {
 		inst.logger.Printf("Error opening stderr pipe: %s", err.Error())
+		return err
+	}
+	err = inst.stderr.SetDeadline(time.Now().Add(20 * time.Second))
+	if err != nil {
+		inst.logger.Println("Failed to set deadline for stderr:", err)
 		return err
 	}
 	return nil

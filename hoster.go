@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"syscall"
@@ -117,7 +118,7 @@ func instanceRunner(inst *instance) {
 
 	exitchan := make(chan struct{})
 	pidcheckchan := make(chan struct{})
-	msgchan := make(chan string, 512)
+	msgchan := make(chan string, 8192)
 
 	wg.Add(1)
 	go func() {
@@ -160,34 +161,60 @@ func instanceRunner(inst *instance) {
 	}()
 	wg.Add(1)
 	go func() {
+		defer inst.logger.Println("stderr reader exited")
 		defer wg.Done()
-
 		bufSize := 1024 * 1024 * 64
 		buf := make([]byte, bufSize)
 
-		s := bufio.NewScanner(inst.stderr)
-		s.Buffer(buf, bufSize)
-		for s.Scan() {
-			msgchan <- s.Text()
-		}
-		if !errors.Is(s.Err(), os.ErrClosed) {
-			inst.logger.Printf("stderr scanner exited with error %s", s.Err().Error())
+		for {
+			s := bufio.NewScanner(inst.stderr)
+			s.Buffer(buf, bufSize)
+			for s.Scan() {
+				msgchan <- s.Text()
+			}
+			if s.Err() == nil || errors.Is(s.Err(), os.ErrClosed) {
+				return
+			} else if errors.Is(s.Err(), os.ErrDeadlineExceeded) {
+				err = inst.stderr.SetDeadline(time.Now().Add(1 * time.Minute))
+				if err != nil {
+					inst.logger.Println("failed to set deadline for stderr in scanner routine:", err)
+					discordPostError(`failed to set deadline for stderr in scanner routine: %s\n%s`, err.Error(), string(debug.Stack()))
+				}
+				continue
+			} else {
+				inst.logger.Printf("stderr scanner exited with error %s", s.Err().Error())
+				discordPostError(`failed to set deadline for stderr in scanner routine: %s\n%s`, err.Error(), string(debug.Stack()))
+				return
+			}
 		}
 	}()
 	wg.Add(1)
 	go func() {
+		defer inst.logger.Println("stdout reader exited")
 		defer wg.Done()
-
 		bufSize := 1024 * 1024 * 64
 		buf := make([]byte, bufSize)
 
-		s := bufio.NewScanner(inst.stdout)
-		s.Buffer(buf, bufSize)
-		for s.Scan() {
-			msgchan <- s.Text()
-		}
-		if !errors.Is(s.Err(), os.ErrClosed) {
-			inst.logger.Printf("stdout scanner exited with error %s", s.Err().Error())
+		for {
+			s := bufio.NewScanner(inst.stdout)
+			s.Buffer(buf, bufSize)
+			for s.Scan() {
+				msgchan <- s.Text()
+			}
+			if s.Err() == nil || errors.Is(s.Err(), os.ErrClosed) {
+				return
+			} else if errors.Is(s.Err(), os.ErrDeadlineExceeded) {
+				err = inst.stdout.SetDeadline(time.Now().Add(1 * time.Minute))
+				if err != nil {
+					inst.logger.Println("failed to set deadline for stdout in scanner routine:", err)
+					discordPostError(`failed to set deadline for stdout in scanner routine: %s\n%s`, err.Error(), string(debug.Stack()))
+				}
+				continue
+			} else {
+				inst.logger.Printf("stdout scanner exited with error %s", s.Err().Error())
+				discordPostError(`failed to set deadline for stdout in scanner routine: %s\n%s`, err.Error(), string(debug.Stack()))
+				return
+			}
 		}
 	}()
 
@@ -195,11 +222,13 @@ func instanceRunner(inst *instance) {
 	shutdownOrdered := false
 msgloop:
 	for {
+		if (pidCheckFailed || shutdownOrdered) && len(msgchan) == 0 {
+			break
+		}
 		select {
 		case <-pidcheckchan:
 			inst.logger.Println("Pid check failed, closing off instance runtime")
 			pidCheckFailed = true
-			break msgloop
 		case cmd := <-inst.commands:
 			switch cmd.command {
 			case icNone:
