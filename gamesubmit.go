@@ -182,6 +182,7 @@ func flushStagingGraphs(inst *instance) {
 			}
 		}
 	}
+	inst.StagingGraphs = []gamereport.GameReportGraphFrame{}
 }
 
 func submitEnd(inst *instance, reportBytes []byte) {
