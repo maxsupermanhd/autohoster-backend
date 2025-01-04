@@ -156,7 +156,14 @@ func submitFrame(inst *instance, reportBytes []byte) {
 		frame.RecentDroidPowerLost[i] = v.RecentDroidPowerLost
 		frame.RecentStructurePowerLost[i] = v.RecentStructurePowerLost
 	}
-	tag, err := dbpool.Exec(context.Background(), `update games set graphs = coalesce(graphs, '[]'::json)::jsonb || $1::jsonb where id = $2`, frame, inst.GameId)
+	inst.StagingGraphs = append(inst.StagingGraphs, frame)
+	if len(inst.StagingGraphs) > 16 {
+		flushStagingGraphs(inst)
+	}
+}
+
+func flushStagingGraphs(inst *instance) {
+	tag, err := dbpool.Exec(context.Background(), `update games set graphs = coalesce(graphs, '[]'::json)::jsonb || $1::jsonb where id = $2`, inst.StagingGraphs, inst.GameId)
 	if err != nil {
 		inst.logger.Printf("Failed to add game frame: %s (gid %d)", err.Error(), inst.GameId)
 		discordPostError("Failed to add game frame: %s (gid %d) (instance %d)", err.Error(), inst.GameId, inst.Id)

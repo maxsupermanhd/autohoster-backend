@@ -291,6 +291,10 @@ msgloop:
 		inst.logger.Println("Runner stores replay")
 		sendReplayToStorage(inst)
 	}
+	if len(inst.StagingGraphs) > 0 {
+		inst.logger.Println("Runner flushes staging graphs")
+		flushStagingGraphs(inst)
+	}
 	inst.logger.Println("Runner archives itself")
 	err = archiveInstance(inst.ConfDir)
 	if err != nil {

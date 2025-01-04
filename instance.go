@@ -1,6 +1,7 @@
 package main
 
 import (
+	gamereport "autohoster-backend/gameReport"
 	"log"
 	"os"
 	"sync"
@@ -75,4 +76,5 @@ type instance struct {
 	RoomStatus          lac.Conf
 	commands            chan instanceCommand
 	wg                  sync.WaitGroup
+	StagingGraphs       []gamereport.GameReportGraphFrame
 }
