@@ -157,7 +157,7 @@ func submitFrame(inst *instance, reportBytes []byte) {
 		frame.RecentStructurePowerLost[i] = v.RecentStructurePowerLost
 	}
 	inst.StagingGraphs = append(inst.StagingGraphs, frame)
-	if len(inst.StagingGraphs) > 16 {
+	if len(inst.StagingGraphs) > tryCfgGetD(tryGetIntGen("stagingGraphs"), 16, inst.cfgs...) {
 		flushStagingGraphs(inst)
 	}
 }
