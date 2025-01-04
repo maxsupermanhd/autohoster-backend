@@ -43,7 +43,7 @@ func spawnRunner(inst *instance) {
 		"--startplayers=" + fmt.Sprint(tryCfgGetD(tryGetIntGen("startPlayers"), inst.Settings.PlayerCount, inst.cfgs...)),
 		"--gamelog-output=log,cmdinterface",
 		"--gamelog-outputkey=playerposition",
-		"--gamelog-frameinterval=1",
+		"--gamelog-frameinterval=" + fmt.Sprint(inst.Settings.FrameInterval),
 		"--gametimelimit=" + fmt.Sprint(inst.Settings.TimeLimit),
 		"--host-chat-config=quickchat",
 		"--async-join-approve",

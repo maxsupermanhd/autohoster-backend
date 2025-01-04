@@ -42,6 +42,7 @@ type instanceSettings struct {
 	MapHash          string
 	PlayerCount      int
 	TimeLimit        int
+	FrameInterval    int
 	Mods             string
 	DisplayCategory  int
 	RatingCategories []int

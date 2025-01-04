@@ -170,6 +170,7 @@ func geniMap(inst *instance) error {
 
 func geniPreset(inst *instance) error {
 	inst.Settings.TimeLimit = tryCfgGetD(tryGetIntGen("timelimit"), 2, inst.cfgs...)
+	inst.Settings.FrameInterval = tryCfgGetD(tryGetIntGen("frameinterval"), 1, inst.cfgs...)
 	inst.Settings.PlayerCount = tryCfgGetD(tryGetIntGen("players"), -1, inst.cfgs...)
 	if inst.Settings.PlayerCount < 2 {
 		inst.logger.Println("Invalid playercount, aborting room creation!!!")
