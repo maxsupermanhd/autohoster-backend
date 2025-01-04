@@ -5,6 +5,7 @@ import (
 	gamereport "autohoster-backend/gameReport"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -12,8 +13,10 @@ import (
 	"os"
 	"path"
 	"runtime/debug"
+	"strconv"
 	"strings"
 
+	"github.com/DataDog/zstd"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -23,9 +26,20 @@ var (
 	gid            = flag.Int("gid", -1, "game id")
 	instanceId     = flag.Int64("instance", -1, "instance id")
 	connString     = flag.String("connString", "", "database connection string")
+	dbpool         *pgxpool.Pool
 )
 
 func main() {
+	flag.Parse()
+	if *gid < 1 {
+		log.Println("gid is wrong")
+		return
+	}
+	if *instanceId < 1 {
+		log.Println("instance is wrong")
+		return
+	}
+	dbpool = noerr(pgxpool.Connect(context.Background(), *connString))
 	archiveId := archiveInstanceIdToWeek(*instanceId)
 	log.Printf("Looking for instance %d in archive %d", *instanceId, archiveId)
 	archiveNameNormal := fmt.Sprintf("%d.tar", archiveId)
@@ -44,10 +58,92 @@ func main() {
 		processCompressedArchive(archivePathCompressed)
 		return
 	}
+	log.Println("archive ", archivePathNormal, " not found")
+}
+
+func processArchive(p string) {
+	f := noerr(os.Open(p))
+	processTar(f)
+	f.Close()
+}
+
+func processCompressedArchive(p string) {
+	f := noerr(os.Open(p))
+	r := zstd.NewReader(f)
+	processTar(r)
+	r.Close()
+	f.Close()
+}
+
+func processTar(f io.Reader) {
+	r := tar.NewReader(f)
+	for {
+		h, err := r.Next()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				log.Println("end of archive reached")
+				return
+			}
+			must(err)
+		}
+		if !strings.HasPrefix(h.Name, "/"+strconv.Itoa(int(*instanceId))) && !strings.HasPrefix(h.Name, strconv.Itoa(int(*instanceId))) {
+			continue
+		}
+		processInstanceGameLog(r, h)
+		processInstanceReplay(r, h)
+	}
+}
+
+func processInstanceReplay(r *tar.Reader, h *tar.Header) {
+	fb := path.Base(h.Name)
+	if !strings.HasSuffix(fb, "_multiplay_p13.wzrp") {
+		return
+	}
+	buf := noerr(io.ReadAll(r))
+	if len(buf) != int(h.Size) {
+		log.Printf("tar read %q i %d != size %d", h.Name, len(buf), h.Size)
+	}
+	log.Printf("processing game replay %q of size %d", h.Name, h.Size)
+	processGameReplay(buf)
+}
+
+func processInstanceGameLog(r *tar.Reader, h *tar.Header) {
+	fb := path.Base(h.Name)
+	if !strings.HasPrefix(fb, "gamelog_") {
+		return
+	}
+	if !strings.HasSuffix(fb, ".log") {
+		return
+	}
+	buf := noerr(io.ReadAll(r))
+	if len(buf) != int(h.Size) {
+		log.Printf("tar read %q i %d != size %d", h.Name, len(buf), h.Size)
+	}
+	log.Printf("processing game log %q of size %d", h.Name, h.Size)
+	processGameLog(string(buf))
+}
+
+func processGameReplay(buf []byte) {
+	replayCompressed := noerr(zstd.CompressLevel(nil, buf, 19))
+	tag := noerr(dbpool.Exec(context.Background(), `update games set replay = $1 where id = $2`, replayCompressed, *gid))
+	log.Println("replay ", tag.String())
+}
+
+func processGameLog(g string) {
+	gs := strings.Split(g, "\n")
+	for i, v := range gs {
+		if strings.HasPrefix(v, "__REPORTextended__") && strings.HasSuffix(v, "__ENDREPORTextended__") {
+			v = strings.TrimPrefix(v, "__REPORTextended__")
+			v = strings.TrimSuffix(v, "__ENDREPORTextended__")
+			rpt := gamereport.GameReportExtended{}
+			log.Printf("Extended report found at line %d, len %d", i, len(v))
+			must(json.Unmarshal([]byte(v), &rpt))
+			submitGameEnd(rpt)
+		}
+	}
 }
 
 func submitGameEnd(report gamereport.GameReportExtended) {
-	dbpool := noerr(pgxpool.Connect(context.Background(), *connString))
 	err := dbpool.BeginFunc(context.Background(), func(tx pgx.Tx) error {
 		for _, v := range report.PlayerData {
 			_, err := dbpool.Exec(context.Background(), `update players set usertype = $1, props = $2 where game = $3 and position = $4`,
@@ -69,59 +165,14 @@ func submitGameEnd(report gamereport.GameReportExtended) {
 	}
 }
 
-func processGameLog(g string) {
-	gs := strings.Split(g, "\n")
-	for i, v := range gs {
-		if strings.HasPrefix(v, "__REPORTextended__") && strings.HasSuffix(v, "__ENDREPORTextended__") {
-			v = strings.TrimPrefix(v, "__REPORTextended__")
-			v = strings.TrimSuffix(v, "__ENDREPORTextended__")
-			rpt := gamereport.GameReportExtended{}
-			log.Printf("Extended report found at line %d, len %d", i, len(v))
-			must(json.Unmarshal([]byte(v), &rpt))
-			submitGameEnd(rpt)
-		}
-	}
-}
-
-func processTar(f io.Reader) {
-	r := tar.NewReader(f)
-	for {
-		h := noerr(r.Next())
-		fb := path.Base(h.Name)
-		if !strings.HasPrefix(fb, "gamelog_") {
-			continue
-		}
-		if !strings.HasSuffix(fb, ".log") {
-			continue
-		}
-		buf := make([]byte, h.Size)
-		i := noerr(r.Read(buf))
-		if i != int(h.Size) {
-			log.Printf("tar read i %d != size %d", i, h.Size)
-		}
-		processGameLog(string(buf))
-	}
-}
-
-func processArchive(p string) {
-	f := noerr(os.Open(p))
-	processTar(f)
-	f.Close()
-}
-
-func processCompressedArchive(_ string) {
-	log.Println("not implemented compressed archive scanning")
-	// TODO
-}
-
 func archiveInstanceIdToWeek(num int64) int64 {
 	return num / (7 * 24 * 60 * 60)
 }
 
 func must(err error) {
 	if err != nil {
-		log.Fatal(err)
 		debug.PrintStack()
+		log.Fatal(err)
 	}
 }
 
