@@ -203,6 +203,14 @@ where i.pkey = $1`, pubkey).Scan(&terminated)
 		}
 	}
 
+	defaultNames := []string{"_", "Player", "플레이어", "Giocatore", "Gracz", "Hráč", "Igrač", "Igralec", "Imreoir", "Játékos", "Jogador", "Joueur", "Jucător", "Jugador", "Mägija", "Oyuncu", "Pelaaja", "Pemain", "Speler", "Spieler", "Spiler", "Spiller", "Žaidėjas", "Παίκτης", "Гравець", "Играч", "Игрок", "Уенчы", "اللاعب", "玩家"}
+	for _, v := range defaultNames {
+		if name == v {
+			jd.Messages = append(jd.Messages, "You not allowed to participate in the game because you are using default name, please change it in top left field and rejoin.")
+			action = joinCheckActionLevelApproveSpec
+		}
+	}
+
 	inst.logger.Printf("connfilter resolved key %v nljoin %v (acc %v) nlplay %v (action %v) nlchat %v (allowed %v)",
 		pubkeyB64,
 		allowNonLinkedJoin, account,
