@@ -427,7 +427,7 @@ func messageHandlerProcessChat(inst *instance, msg string) bool {
 	if msgtype == "WZCHATCMD" && strings.HasPrefix(string(msgcontent), "/hostmsg confirm-") {
 		processLinkingMessage(inst, msgpubkey, msgb64pubkey, string(msgname), string(msgcontent))
 	} else if msgtype == "WZCHATCMD" && (string(msgcontent) == "/stat" || string(msgcontent) == "/stats") {
-		instWriteFmt(inst, `chat bcast Game history of Autohoster is available at the website: https://wz2100-autohost.net/games (with detailed dtatistics, charts and replay)`)
+		instWriteFmt(inst, `chat bcast Game history of Autohoster is available at the website: https://wz2100-autohost.net/games (with detailed statistics, charts and replay)`)
 	} else if msgtype == "WZCHATCMD" && (strings.HasPrefix(string(msgcontent), "/votekick ")) {
 		voteKickOnCommand(inst, msgpubkey, msgip, strings.TrimPrefix(string(msgcontent), "/votekick "))
 	}
