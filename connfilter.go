@@ -236,7 +236,13 @@ func checkIPMatchesConfigs(inst *instance, ip string, confpath ...string) bool {
 		for _, k := range o {
 			s, ok := inst.cfgs[i].GetBool(append(confpath, k)...)
 			if !ok {
-				continue
+				b, ok := inst.cfgs[i].GetString(append(confpath, k)...)
+				if !ok {
+					continue
+				}
+				if !strings.HasPrefix(b, "false") {
+					s = true
+				}
 			}
 			if !s {
 				delete(ipmatchs, k)
