@@ -178,6 +178,7 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 	if account == nil {
 		if checkIPMatchesConfigs(inst, ip, "ipmute") {
 			jd.AllowChat = false
+			jd.Messages = append(jd.Messages, "You not allowed to use free chat because you are not linked to an account. Link today at https://wz2100-autohost.net/")
 		}
 	}
 
@@ -186,6 +187,7 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 		if checkIPMatchesConfigs(inst, ip, "ipnoplay") {
 			if action == joinCheckActionLevelApprove {
 				action = joinCheckActionLevelApproveSpec
+				jd.Messages = append(jd.Messages, "You not allowed to participate because you are not linked to an account. Link today at https://wz2100-autohost.net/")
 			}
 		}
 	}
