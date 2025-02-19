@@ -91,7 +91,7 @@ func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64p
 				rpl += fmt.Sprintf("\\n    argument %d %s of type %s", i+1, a.name, a.t)
 			}
 		}
-		instWriteFmt(inst, `chat direct %s %s`, invb64pkey, rpl)
+		instWriteFmt(inst, `chat bcast %s`, rpl)
 	}
 	if args == "" {
 		showHelp()
