@@ -84,14 +84,13 @@ func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64p
 		},
 	}
 	showHelp := func() {
-		rpl := "Allowed set parameters are:"
+		instWriteFmt(inst, `chat direct %s %s`, invb64pkey, "Allowed set parameters are:")
 		for _, v := range chatCommands {
-			rpl += "\\n" + v.name + " " + v.description
+			instWriteFmt(inst, `chat direct %s %s`, invb64pkey, v.name+" "+v.description)
 			for i, a := range v.args {
-				rpl += fmt.Sprintf("\\n    argument %d %s of type %s", i+1, a.name, a.t)
+				instWriteFmt(inst, `chat direct %s %s`, invb64pkey, fmt.Sprintf("-    argument %d %s of type %s", i+1, a.name, a.t))
 			}
 		}
-		instWriteFmt(inst, `chat bcast %s`, rpl)
 	}
 	if args == "" {
 		showHelp()
