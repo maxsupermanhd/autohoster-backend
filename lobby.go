@@ -63,8 +63,22 @@ func populateLobby(lr []lobby.LobbyRoom) {
 		}
 		li := isQueueInLobby(queueName)
 		if li != 0 {
-			log.Printf("Queue %q in lobby with instance id %v", queueName, li)
-			continue
+			rerollMinutes := cfg.GetDInt(0, "queues", queueName, "idleRerollMinutes")
+			if rerollMinutes == 0 {
+				log.Printf("Queue %q in lobby with instance id %v", queueName, li)
+				continue
+			}
+			instanceAliveFor := time.Since(time.Unix(li, 0))
+			rerollDuration := time.Minute * time.Duration(rerollMinutes)
+			if instanceAliveFor >= rerollDuration {
+				if sendShutdownIfRerollable(li) {
+					log.Printf("Queue %q in lobby with instance id %v (reroll ordered)", queueName, li)
+				} else {
+					log.Printf("Queue %q in lobby with instance id %v (reroll blocked)", queueName, li)
+				}
+			} else {
+				log.Printf("Queue %q in lobby with instance id %v (reroll in %s)", queueName, li, rerollDuration-instanceAliveFor)
+			}
 		}
 		log.Printf("Queue %q is missing from lobby, spawning new one...", queueName)
 		gi, err := generateInstance(cfg.DupSubTree("queues", queueName))

@@ -174,3 +174,40 @@ func isInstanceInLobbyNOLOCK(instanceID int64) bool {
 	}
 	return false
 }
+
+func sendShutdownIfRerollable(instanceID int64) bool {
+	instancesLock.Lock()
+	defer instancesLock.Unlock()
+	return sendShutdownIfRerollableNOLOCK(instanceID)
+}
+
+func sendShutdownIfRerollableNOLOCK(instanceID int64) bool {
+	for i := range instances {
+		inst := instances[i]
+		if inst.Id != instanceID {
+			continue
+		}
+		pl, ok := inst.RoomStatus.GetSliceAny("players")
+		if !ok {
+			inst.logger.Println("rerollable check room status has no players slice")
+			return false
+		}
+		for _, psl := range pl {
+			p, ok := psl.(map[string]any)
+			if !ok {
+				inst.logger.Println("rerollable check room status wrong item in players slice")
+				return false
+			}
+			playertype, ok := p["type"].(string)
+			if !ok {
+				continue
+			}
+			if playertype == "player" {
+				return false
+			}
+		}
+		inst.commands <- instanceCommand{command: icShutdown}
+		return true
+	}
+	return false
+}
