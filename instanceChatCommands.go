@@ -16,7 +16,14 @@ func instanceChatCommandHandle(inst *instance, msg string, invhash, invb64pkey s
 		voteKickOnCommand(inst, invpkey, invip, args)
 	} else if cmd == "/set" {
 		instanceChatCommandHandlerSet(inst, args, invhash, invb64pkey, invpkey, invname, invip)
+	} else if cmd == "/help" {
+		instanceChatCommandHandlerHelp(inst, args, invhash, invb64pkey, invpkey, invname, invip)
 	}
+}
+
+func instanceChatCommandHandlerHelp(inst *instance, args string, invhash, invb64pkey string, invpkey []byte, invname, invip string) {
+	instWriteFmt(inst, `chat direct %s /votekick <3+ hash chars> - initiates votekick for identity`, invb64pkey)
+	instWriteFmt(inst, `chat direct %s /set ... - [admin] configure the room preferences`, invb64pkey)
 }
 
 func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64pkey string, invpkey []byte, invname, invip string) {
