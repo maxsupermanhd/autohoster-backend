@@ -79,6 +79,7 @@ func populateLobby(lr []lobby.LobbyRoom) {
 			} else {
 				log.Printf("Queue %q in lobby with instance id %v (reroll in %s)", queueName, li, rerollDuration-instanceAliveFor)
 			}
+			continue
 		}
 		log.Printf("Queue %q is missing from lobby, spawning new one...", queueName)
 		gi, err := generateInstance(cfg.DupSubTree("queues", queueName))
