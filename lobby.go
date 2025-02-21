@@ -77,7 +77,7 @@ func populateLobby(lr []lobby.LobbyRoom) {
 					log.Printf("Queue %q in lobby with instance id %v (reroll blocked)", queueName, li)
 				}
 			} else {
-				log.Printf("Queue %q in lobby with instance id %v (reroll in %s)", queueName, li, rerollDuration-instanceAliveFor)
+				log.Printf("Queue %q in lobby with instance id %v (reroll in %s)", queueName, li, (rerollDuration - instanceAliveFor).Round(time.Second))
 			}
 			continue
 		}
