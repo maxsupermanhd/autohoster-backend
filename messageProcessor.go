@@ -354,7 +354,7 @@ func messageHandlerProcessIdentityJoin(inst *instance, msgb64pubkey string) {
 	for _, k := range keys {
 		instWriteFmt(inst, `chat direct %s %s`, msgb64pubkey, motds[k])
 	}
-	instWriteFmt(inst, `chat direct %s This game has time limit of %d minutes.`, msgb64pubkey, inst.Settings.TimeLimit)
+	instWriteFmt(inst, `chat direct %s ⚠ This game has time limit of %d minutes.`, msgb64pubkey, inst.Settings.TimeLimit)
 	d, ok := inst.OnJoinDispatch[msgb64pubkey]
 	if ok {
 		if d.AllowChat {

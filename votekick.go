@@ -27,29 +27,29 @@ var (
 func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHash string) {
 	req := voteKickGetThreshold(inst)
 	if req == 0 {
-		instWriteFmt(inst, `chat bcast Votekick is disabled in this room.`)
+		instWriteFmt(inst, `chat bcast ⚠ Votekick is disabled in this room.`)
 		return
 	}
 	if !checkPkeyHasAccount(fromPkey) {
-		instWriteFmt(inst, `chat bcast Votekick avaliable only to registered and linked players.`)
-		instWriteFmt(inst, `chat bcast Link your identity on https://wz2100-autohost.net/wzlink`)
+		instWriteFmt(inst, `chat bcast ⚠ Votekick avaliable only to registered and linked players.`)
+		instWriteFmt(inst, `chat bcast ⚠ Link your identity on https://wz2100-autohost.net/wzlink`)
 		return
 	}
 	if len(targetHash) < 3 {
-		instWriteFmt(inst, `chat bcast Votekick player ID prefix must be at least 3 characters long`)
+		instWriteFmt(inst, `chat bcast ⚠ Votekick player ID prefix must be at least 3 characters long`)
 		return
 	}
 	if !stringOnlyContainsCaseInsensitive(targetHash, "0123456789abcdef") {
-		instWriteFmt(inst, `chat bcast Votekick provided player ID prefix is invalid`)
+		instWriteFmt(inst, `chat bcast ⚠ Votekick provided player ID prefix is invalid`)
 		return
 	}
 	ip, name := roomLookupHash(inst, targetHash)
 	if ip == "" {
-		instWriteFmt(inst, `chat bcast Votekick player not found`)
+		instWriteFmt(inst, `chat bcast ⚠ Votekick player not found`)
 		return
 	}
 	if ip == "multiple" {
-		instWriteFmt(inst, `chat bcast Provide longer votekick player ID, collision detected`)
+		instWriteFmt(inst, `chat bcast ⚠ Provide longer votekick player ID, collision detected`)
 		return
 	}
 	vlt := voteKickGetVoteLifetime()
@@ -75,7 +75,7 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 			if vtr == "0s" {
 				vtr = "1s"
 			}
-			instWriteFmt(inst, `chat bcast Please wait for %s to cast your next vote`, vtr)
+			instWriteFmt(inst, `chat bcast ⚠ Please wait for %s to cast your next vote`, vtr)
 			return
 		}
 		voteKickVotes[fromIP] = voteKickVote{
@@ -86,7 +86,7 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 	}
 
 	hits := voteKickCheckIPNOLOCK(ip, vlt)
-	instWriteFmt(inst, `chat bcast Votekick of player %s (%q): votes %d/%d`, targetHash, strings.ReplaceAll(name, "\n", ""), hits, req)
+	instWriteFmt(inst, `chat bcast ⚠ Votekick of player %s (%q): votes %d/%d`, targetHash, strings.ReplaceAll(name, "\n", ""), hits, req)
 	if hits >= req {
 		instWriteFmt(inst, `ban ip %s You got votekicked. You will be able to join back in %s. If you feel like it is being abused, contact administrators.`, ip, bandur)
 		instWriteFmt(inst, `unban ip %s`, ip)

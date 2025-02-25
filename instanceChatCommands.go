@@ -28,7 +28,7 @@ func instanceChatCommandHandlerHelp(inst *instance, args string, invhash, invb64
 
 func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64pkey string, invpkey []byte, invname, invip string) {
 	if !isHashInstanceAdmin(inst, invhash) {
-		instWriteFmt(inst, `chat bcast You must be an instance admin to use /set command`)
+		instWriteFmt(inst, `chat bcast ⚠ You must be an instance admin to use /set command`)
 		return
 	}
 	type chatCommandArgument struct {
@@ -51,7 +51,7 @@ func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64p
 		exec: func(args []any) string {
 			v := args[0].(bool)
 			inst.cfgs[0].Set(v, "allowNonLinkedJoin")
-			return fmt.Sprintf("Top configuration layer value 'allowNonLinkedJoin' was set to %+#v", v)
+			return fmt.Sprintf("☑ Top configuration layer value 'allowNonLinkedJoin' was set to %+#v", v)
 		},
 	}, {
 		name:        "allowNonLinkedPlay",
@@ -63,7 +63,7 @@ func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64p
 		exec: func(args []any) string {
 			v := args[0].(bool)
 			inst.cfgs[0].Set(v, "allowNonLinkedPlay")
-			return fmt.Sprintf("Top configuration layer value 'allowNonLinkedPlay' was set to %+#v", v)
+			return fmt.Sprintf("☑ Top configuration layer value 'allowNonLinkedPlay' was set to %+#v", v)
 		},
 	}, {
 		name:        "allowNonLinkedChat",
@@ -75,7 +75,7 @@ func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64p
 		exec: func(args []any) string {
 			v := args[0].(bool)
 			inst.cfgs[0].Set(v, "allowNonLinkedChat")
-			return fmt.Sprintf("Top configuration layer value 'allowNonLinkedChat' was set to %+#v", v)
+			return fmt.Sprintf("☑ Top configuration layer value 'allowNonLinkedChat' was set to %+#v", v)
 		},
 	}}
 	type argumentParser func(arg string) (any, error)
@@ -115,7 +115,7 @@ func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64p
 		for i, a := range c.args {
 			argCont, args = popWord(args)
 			if argCont == "" {
-				instWriteFmt(inst, `chat bcast Expected %d arguments but found %d. Use "/set" to get help.`, len(c.args), i)
+				instWriteFmt(inst, `chat bcast ⚠ Expected %d arguments but found %d. Use "/set" to get help.`, len(c.args), i)
 				return
 			}
 			parser, ok := argumentParsers[a.t]
@@ -135,7 +135,7 @@ func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64p
 		return
 	}
 
-	instWriteFmt(inst, `chat bcast Set parameter %q not found. Use "/set" to get help.`, cmd)
+	instWriteFmt(inst, `chat bcast ⚠ Set parameter %q not found. Use "/set" to get help.`, cmd)
 }
 
 func popWord(msg string) (part, rem string) {

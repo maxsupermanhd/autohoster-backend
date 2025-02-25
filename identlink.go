@@ -20,10 +20,10 @@ func processLinkingMessage(inst *instance, fromPk []byte, fromPkBase64 string, p
 	err := dbpool.QueryRow(ctx, `select id from accounts where wz_confirm_code = $1`, confirmCode).Scan(&accountID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "Invalid code, please get one at https://wz2100-autohost.net/wzlink")
+			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "⚠ Invalid code, please get one at https://wz2100-autohost.net/wzlink")
 			return
 		} else {
-			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "Something went wrong, contact administrators for assistance.")
+			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "⚠ Something went wrong, contact administrators for assistance.")
 			discordPostError(`%s\n%s`, err.Error(), string(debug.Stack()))
 			return
 		}
@@ -38,11 +38,11 @@ func processLinkingMessage(inst *instance, fromPk []byte, fromPkBase64 string, p
 			return err
 		}
 		if tag.RowsAffected() == 0 {
-			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "Identity already claimed, contact administrators if you are confused.")
+			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "⚠ Identity already claimed, contact administrators if you are confused.")
 			return nil
 		}
 		if tag.RowsAffected() > 1 {
-			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "Something went wrong, contact administrators for assistance.")
+			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "⚠ Something went wrong, contact administrators for assistance.")
 			discordPostError(`sus tag %s on identity insert\n%s`, tag, string(debug.Stack()))
 			return nil
 		}
@@ -53,11 +53,11 @@ func processLinkingMessage(inst *instance, fromPk []byte, fromPkBase64 string, p
 		if !tag.Update() || tag.RowsAffected() != 1 {
 			discordPostError(`sus tag %s on account confirm code clear while linking\n%s`, tag, string(debug.Stack()))
 		}
-		instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "Identity linked successfully")
+		instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "☑ Identity linked successfully")
 		return nil
 	})
 	if err != nil {
-		instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "Something went wrong, contact administrators for assistance.")
+		instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "⚠ Something went wrong, contact administrators for assistance.")
 		discordPostError(`identity linking tx error %s\n%s`, err.Error(), string(debug.Stack()))
 		return
 	}
