@@ -22,7 +22,7 @@ func instanceChatCommandHandle(inst *instance, msg string, invhash, invb64pkey s
 }
 
 func instanceChatCommandHandlerHelp(inst *instance, args string, invhash, invb64pkey string, invpkey []byte, invname, invip string) {
-	instWriteFmt(inst, `chat direct %s /votekick <3+ hash chars> - initiates votekick for identity`, invb64pkey)
+	instWriteFmt(inst, `chat direct %s /votekick (Player ID: first 3 symbols) - initiates votekick for identity`, invb64pkey)
 	instWriteFmt(inst, `chat direct %s /set ... - [admin] configure the room preferences`, invb64pkey)
 }
 
