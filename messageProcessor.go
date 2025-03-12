@@ -195,16 +195,18 @@ var (
 		match:   hosterMessageMatchTypePrefix,
 		mPrefix: "WZEVENT: movedPlayerToSpec: ",
 		fn: func(inst *instance, msg string) bool {
-			// WZEVENT: movedPlayerToSpec: 5 -> 16 WMy35N3raEEEgOt3stR62BRvP8E8osfNSiMZOCw5SqU= 0e308437d20db97d110ceecc448d39517b47deb7cbb7fe0338f4308f2619d483 V Qm9kbWluIEJlYXN0
+			// WZEVENT: movedPlayerToSpec: 5 -> 16 WMy35N3raEEEgOt3stR62BRvP8E8osfNSiMZOCw5SqU= 0e308437d20db97d110ceecc448d39517b47deb7cbb7fe0338f4308f2619d483 V Qm9kbWluIEJlYXN0 host
 			var msgplidfrom, msgplidto int
-			var msgb64pubkey, msghash, msgverified, msgb64name, msgip string
-			i, err := fmt.Sscanf(msg, "WZEVENT: movedPlayerToSpec: %d -> %d %s %s %s %s %s",
-				&msgplidfrom, &msgplidto, &msgb64pubkey, &msghash, &msgverified, &msgb64name, &msgip)
-			if err != nil || i != 7 {
+			var msgb64pubkey, msghash, msgverified, msgb64name, msgip, intent string
+			i, err := fmt.Sscanf(msg, "WZEVENT: movedPlayerToSpec: %d -> %d %s %s %s %s %s %s",
+				&msgplidfrom, &msgplidto, &msgb64pubkey, &msghash, &msgverified, &msgb64name, &msgip, &intent)
+			if err != nil || i != 8 {
 				inst.logger.Printf("Failed to parse event movedPlayerToSpec: %v", err)
 				return true
 			}
-			joincheckWasMovedOutGlobal.add(msgb64pubkey, inst.Id)
+			if intent == "host" {
+				joincheckWasMovedOutGlobal.add(msgb64pubkey, inst.Id)
+			}
 			return false
 		},
 	}, {
