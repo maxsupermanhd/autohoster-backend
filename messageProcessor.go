@@ -205,7 +205,7 @@ var (
 				if errors.Is(err, io.EOF) {
 					i, err = fmt.Sscanf(msg, "WZEVENT: movedPlayerToSpec: %d -> %d %s %s %s %s %s",
 						&msgplidfrom, &msgplidto, &msgb64pubkey, &msghash, &msgverified, &msgb64name, &msgip)
-					if err != nil || i < 8 {
+					if err != nil || i < 7 {
 						inst.logger.Printf("Failed to parse event movedPlayerToSpec: %v %v", i, err)
 						return true
 					}
