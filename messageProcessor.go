@@ -200,7 +200,7 @@ var (
 			var msgb64pubkey, msghash, msgverified, msgb64name, msgip, intent string
 			i, err := fmt.Sscanf(msg, "WZEVENT: movedPlayerToSpec: %d -> %d %s %s %s %s %s %s",
 				&msgplidfrom, &msgplidto, &msgb64pubkey, &msghash, &msgverified, &msgb64name, &msgip, &intent)
-			if err != nil || i != 8 {
+			if err != nil || i < 7 {
 				inst.logger.Printf("Failed to parse event movedPlayerToSpec: %v", err)
 				return true
 			}
