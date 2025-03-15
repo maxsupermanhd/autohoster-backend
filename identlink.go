@@ -17,7 +17,8 @@ func processLinkingMessage(inst *instance, fromPk []byte, fromPkBase64 string, p
 	confirmCode := strings.TrimPrefix(strings.Trim(code, " 	\n\r"), "/hostmsg ")
 
 	var accountID int
-	err := dbpool.QueryRow(ctx, `select id from accounts where wz_confirm_code = $1`, confirmCode).Scan(&accountID)
+	var emailConfirmed *time.Time
+	err := dbpool.QueryRow(ctx, `select id, email_confirmed from accounts where wz_confirm_code = $1`, confirmCode).Scan(&accountID, &emailConfirmed)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "⚠ Invalid code, please get one at https://wz2100-autohost.net/wzlink")
@@ -27,6 +28,11 @@ func processLinkingMessage(inst *instance, fromPk []byte, fromPkBase64 string, p
 			discordPostError(`%s\n%s`, err.Error(), string(debug.Stack()))
 			return
 		}
+	}
+
+	if emailConfirmed == nil {
+		instWriteFmt(inst, `chat direct %s %s`, fromPkBase64, "⚠ Email not confirmed. Please confirm your email to link an identity. If you need to re-send confirmation email or change your address contact Administrators.")
+		return
 	}
 
 	err = dbpool.BeginFunc(ctx, func(tx pgx.Tx) error {
