@@ -11,10 +11,14 @@ import (
 )
 
 func processLinkingMessage(inst *instance, fromPk []byte, fromPkBase64 string, playername string, code string) {
+	confirmCode := strings.TrimPrefix(strings.Trim(code, " 	\n\r"), "/hostmsg ")
+
+	if !strings.HasPrefix(confirmCode, "confirm-") {
+		return
+	}
+
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer ctxCancel()
-
-	confirmCode := strings.TrimPrefix(strings.Trim(code, " 	\n\r"), "/hostmsg ")
 
 	var accountID int
 	var emailConfirmed *time.Time
