@@ -169,7 +169,7 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 	// moved out check
 	if joincheckWasMovedOutGlobal.present(pubkeyB64, inst.Id) {
 		if action == joinCheckActionLevelApprove {
-			jd.Messages = append(jd.Messages, "⚠ You not allowed to participate in the game because moderator moved you out earlier")
+			jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate in the game because moderator moved you out earlier")
 			action = joinCheckActionLevelApproveSpec
 		}
 	}
@@ -178,7 +178,7 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 	if account == nil {
 		if checkIPMatchesConfigs(inst, ip, "ipmute") {
 			jd.AllowChat = false
-			jd.Messages = append(jd.Messages, "⚠ You not allowed to use free chat because you are not linked to an account. Link today at https://wz2100-autohost.net/")
+			jd.Messages = append(jd.Messages, "⚠ You are not allowed to use free chat because you are not linked to an account. Link today at https://wz2100-autohost.net/")
 		}
 	}
 
@@ -187,7 +187,7 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 		if checkIPMatchesConfigs(inst, ip, "ipnoplay") {
 			if action == joinCheckActionLevelApprove {
 				action = joinCheckActionLevelApproveSpec
-				jd.Messages = append(jd.Messages, "⚠ You not allowed to participate because you are not linked to an account. Link today at https://wz2100-autohost.net/")
+				jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate because you are not linked to an account. Link today at https://wz2100-autohost.net/")
 			}
 		}
 	}
@@ -200,7 +200,7 @@ join identities as i on i.account = a.id
 where i.pkey = $1`, pubkey).Scan(&terminated)
 	if terminated {
 		if action == joinCheckActionLevelApprove {
-			jd.Messages = append(jd.Messages, "⚠ You not allowed to participate in the game because your account was terminated. Contact administration for more details.")
+			jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate in the game because your account was terminated. Contact administration for more details.")
 			action = joinCheckActionLevelApproveSpec
 		}
 	}
@@ -208,7 +208,7 @@ where i.pkey = $1`, pubkey).Scan(&terminated)
 	defaultNames := []string{"_", "Player", "플레이어", "Giocatore", "Gracz", "Hráč", "Igrač", "Igralec", "Imreoir", "Játékos", "Jogador", "Joueur", "Jucător", "Jugador", "Mägija", "Oyuncu", "Pelaaja", "Pemain", "Speler", "Spieler", "Spiler", "Spiller", "Žaidėjas", "Παίκτης", "Гравець", "Играч", "Игрок", "Уенчы", "اللاعب", "玩家"}
 	for _, v := range defaultNames {
 		if name == v {
-			jd.Messages = append(jd.Messages, "⚠ You not allowed to participate in the game because you are using default name, please change it in top left field and rejoin.")
+			jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate in the game because you are using default name, please change it in top left field and rejoin.")
 			action = joinCheckActionLevelApproveSpec
 		}
 	}
@@ -217,6 +217,7 @@ where i.pkey = $1`, pubkey).Scan(&terminated)
 	if account == nil {
 		if chatSpamIsMuted(inst, ip) {
 			jd.AllowChat = false
+			jd.Messages = append(jd.Messages, "⚠ You are temporarily not allowed to use free chat because you spammed in chat.")
 		}
 	}
 
