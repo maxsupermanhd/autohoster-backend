@@ -80,7 +80,7 @@ func chatSpamHit(inst *instance, content, ip, key64 string) {
 		chatSpamMutesLock.Lock()
 		chatSpamMutes[ip] = time.Now()
 		chatSpamMutesLock.Unlock()
-		instWriteFmt(inst, `chat set mute %s`, key64)
+		instWriteFmt(inst, `set chat mute %s`, key64)
 		instWriteFmt(inst, `chat direct %s %s`, key64, "⚠ You were automatically muted for chat spam.")
 		instWriteFmt(inst, `chat bcast ⚠ Please do not spam, it does not help anyone.`)
 	}
