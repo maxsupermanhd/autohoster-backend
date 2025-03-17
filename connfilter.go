@@ -213,6 +213,13 @@ where i.pkey = $1`, pubkey).Scan(&terminated)
 		}
 	}
 
+	// keep spammers muted but with account allow rejoin to unmute
+	if account == nil {
+		if chatSpamIsMuted(inst, ip) {
+			jd.AllowChat = false
+		}
+	}
+
 	inst.logger.Printf("connfilter resolved key %v nljoin %v (acc %v) nlplay %v (action %v) nlchat %v (allowed %v)",
 		pubkeyB64,
 		allowNonLinkedJoin, account,

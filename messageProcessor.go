@@ -436,6 +436,7 @@ func messageHandlerProcessChat(inst *instance, msg string) bool {
 		inst.logger.Printf("Failed to log chat of instance `%d`: %s (%q: %q), was fed %q", inst.Id, err.Error(), string(msgname), string(msgcontent), origmsg)
 		discordPostError("Failed to log chat of instance `%d`: %s (%q: %q), was fed %q", inst.Id, err.Error(), string(msgname), string(msgcontent), origmsg)
 	}
+	chatSpamHit(inst, string(msgcontent), msgip, msgb64pubkey)
 	if msgtype == "WZCHATCMD" {
 		instanceChatCommandHandle(inst, string(msgcontent), msghash, msgb64pubkey, msgpubkey, string(msgname), msgip)
 	}
