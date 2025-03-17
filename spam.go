@@ -74,6 +74,8 @@ func chatSpamHit(inst *instance, content, ip, key64 string) {
 		}
 	}
 
+	inst.logger.Println("antispam", ip, "hits", hits)
+
 	if hits >= tWindowHits {
 		chatSpamMutesLock.Lock()
 		chatSpamMutes[ip] = time.Now()
