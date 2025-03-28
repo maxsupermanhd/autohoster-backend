@@ -162,6 +162,10 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 			if action == joinCheckActionLevelApprove {
 				jd.Messages = append(jd.Messages, "⚠ You were automatically rate limited for leaving the game early. Do not contact admins/moderators about this, they will not help you")
 				action = joinCheckActionLevelApproveSpec
+				_, err := DbLogAction("%d [antigamespam] Join %q rejected for game spam pkey %s", inst.Id, name, pubkeyB64)
+				if err != nil {
+					inst.logger.Printf("Failed to log action in database: %s", err.Error())
+				}
 			}
 		}
 	}
@@ -171,6 +175,10 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 		if action == joinCheckActionLevelApprove {
 			jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate in the game because moderator moved you out earlier")
 			action = joinCheckActionLevelApproveSpec
+			_, err := DbLogAction("%d [movedout] Join %q forcespec because moved out pkey %s", inst.Id, name, pubkeyB64)
+			if err != nil {
+				inst.logger.Printf("Failed to log action in database: %s", err.Error())
+			}
 		}
 	}
 
@@ -179,6 +187,10 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 		if checkIPMatchesConfigs(inst, ip, "ipmute") {
 			jd.AllowChat = false
 			jd.Messages = append(jd.Messages, "⚠ You are not allowed to use free chat because you are not linked to an account. Link today at https://wz2100-autohost.net/")
+			_, err := DbLogAction("%d [ipmute] Join %q muted because no account pkey %s", inst.Id, name, pubkeyB64)
+			if err != nil {
+				inst.logger.Printf("Failed to log action in database: %s", err.Error())
+			}
 		}
 	}
 
@@ -188,6 +200,10 @@ where g.game_time < 60000 and g.time_started + $1::interval > now() and (i.pkey 
 			if action == joinCheckActionLevelApprove {
 				action = joinCheckActionLevelApproveSpec
 				jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate because you are not linked to an account. Link today at https://wz2100-autohost.net/")
+				_, err := DbLogAction("%d [ipnoplay] Join %q forcespec because no account pkey %s", inst.Id, name, pubkeyB64)
+				if err != nil {
+					inst.logger.Printf("Failed to log action in database: %s", err.Error())
+				}
 			}
 		}
 	}
@@ -200,8 +216,14 @@ join identities as i on i.account = a.id
 where i.pkey = $1`, pubkey).Scan(&terminated)
 	if terminated {
 		if action == joinCheckActionLevelApprove {
-			jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate in the game because your account was terminated. Contact administration for more details.")
-			action = joinCheckActionLevelApproveSpec
+			ecode, err := DbLogAction("%d [terminated] Join %q rejected because account terminated pkey %s", inst.Id, name, pubkeyB64)
+			if err != nil {
+				inst.logger.Printf("Failed to log action in database: %s", err.Error())
+			}
+			return jd, joinCheckActionLevelReject, "You were rejected from joining Autohoster.\\n" +
+				"Your identity is linked to terminated account. Joining with terminated account is not allowed.\\n\\n" +
+				"If you believe it is a mistake, feel free to contact us: https://wz2100-autohost.net/about#contact\\n\\n" +
+				"Please provide event ID: " + ecode + " with your request."
 		}
 	}
 
@@ -210,6 +232,10 @@ where i.pkey = $1`, pubkey).Scan(&terminated)
 		if name == v {
 			jd.Messages = append(jd.Messages, "⚠ You are not allowed to participate in the game because you are using default name, please change it in top left field and rejoin.")
 			action = joinCheckActionLevelApproveSpec
+			_, err := DbLogAction("%d [defaultname] Join %q forcespec because default name pkey %s", inst.Id, name, pubkeyB64)
+			if err != nil {
+				inst.logger.Printf("Failed to log action in database: %s", err.Error())
+			}
 		}
 	}
 
