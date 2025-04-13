@@ -298,6 +298,9 @@ func geniBanlist(inst *instance) error {
 		inst.logger.Println("Instance setting fetchBanlist is not declared *anywhere*, no banlist for you!")
 		return nil
 	}
+	if *url == "" {
+		return nil
+	}
 	cl := http.Client{
 		Timeout: 5 * time.Second,
 	}
