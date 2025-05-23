@@ -83,10 +83,14 @@ func chatSpamHit(inst *instance, content, ip, key64 string) {
 	}
 
 	if hits >= tWindowHits {
+		_, err := DbLogAction("%d [spam] anti-spam on ip %s", inst.Id, ip)
+		if err != nil {
+			inst.logger.Printf("Failed to log action in database: %s", err.Error())
+		}
 		chatSpamMutes[ip] = time.Now()
 		instWriteFmt(inst, `set chat mute %s`, key64)
 		instWriteFmt(inst, `chat direct %s %s`, key64, "⚠ You were automatically muted for chat spam.")
-		instWriteFmt(inst, `chat bcast ⚠ Please do not spam, it does not help anyone.`)
+		instWriteFmt(inst, `chat bcast ⚠ Please do not spam, it does not help anyone. Become moderator instead and kick out afk people.`)
 	}
 
 }
