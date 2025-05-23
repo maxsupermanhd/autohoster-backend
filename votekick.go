@@ -132,13 +132,13 @@ func voteKickCheckRestricted(ip string) time.Duration {
 func roomLookupHash(inst *instance, target string) (ip string, name string) {
 	pl, ok := inst.RoomStatus.GetSliceAny("players")
 	if !ok {
-		log.Println("votekick room status has no players slice")
+		inst.logger.Println("votekick room status has no players slice")
 		return
 	}
 	for _, psl := range pl {
 		p, ok := psl.(map[string]any)
 		if !ok {
-			log.Println("votekick room status wrong item in players slice")
+			inst.logger.Println("votekick room status wrong item in players slice")
 			continue
 		}
 		pkm, ok := p["pk"].(string)
@@ -147,7 +147,7 @@ func roomLookupHash(inst *instance, target string) (ip string, name string) {
 		}
 		pk, err := base64.StdEncoding.DecodeString(pkm)
 		if err != nil {
-			log.Printf("votekick ailed to decode base64 pk: %s", err.Error())
+			inst.logger.Printf("votekick ailed to decode base64 pk: %s", err.Error())
 			continue
 		}
 		hashBytes := sha256.Sum256(pk)
@@ -158,7 +158,7 @@ func roomLookupHash(inst *instance, target string) (ip string, name string) {
 					ip = ipm
 					name, _ = p["name"].(string)
 				} else {
-					log.Println("votekick ip not found")
+					inst.logger.Println("votekick ip not found")
 				}
 			} else {
 				ip = "multiple"
