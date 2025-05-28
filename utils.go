@@ -220,21 +220,32 @@ func base64DecodeFields(vs ...any) error {
 	return nil
 }
 
-func roomStatusPlayerSlotToProperty(status lac.Conf, slotNum int, property string) string {
+func roomStatusPlayerSlotToPropertyString(status lac.Conf, slotSearching int, property string) string {
 	pl, ok := status.GetSliceAny("players")
 	if !ok {
 		return ""
 	}
-	if slotNum < 0 || slotNum >= len(pl) {
+	if slotSearching < 0 || slotSearching >= len(pl) {
 		return ""
 	}
-	sla, ok := pl[slotNum].(map[string]any)
-	if !ok {
-		return ""
+	// pastdue moment
+	for _, v := range pl {
+		plx, ok := v.(map[string]any)
+		if !ok {
+			continue
+		}
+		slotNum, ok := plx["pos"].(int)
+		if !ok {
+			continue
+		}
+		if slotNum != slotSearching {
+			continue
+		}
+		ret, ok := plx[property].(string)
+		if !ok {
+			return ""
+		}
+		return ret
 	}
-	ret, ok := sla[property].(string)
-	if !ok {
-		return ""
-	}
-	return ret
+	return ""
 }

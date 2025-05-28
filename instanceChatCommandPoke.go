@@ -71,7 +71,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 				instWriteFmt(inst, `chat bcast ⚠ Poke is disabled in this room! (via countdown)`)
 				continue
 			}
-			slotDataIP = roomStatusPlayerSlotToProperty(inst.RoomStatus.DupSubTree(), requestedSlot, "ip")
+			slotDataIP = roomStatusPlayerSlotToPropertyString(inst.RoomStatus.DupSubTree(), requestedSlot, "ip")
 			if slotDataIP == "" {
 				instWriteFmt(inst, `chat bcast ⚠ Poke failed to locate player.`)
 				continue
@@ -109,7 +109,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 				inst.logger.Println("poke timer poked empty ip")
 				continue
 			}
-			pk := roomStatusPlayerSlotToProperty(inst.RoomStatus.DupSubTree(), pokeCurrentSlot, "pk")
+			pk := roomStatusPlayerSlotToPropertyString(inst.RoomStatus.DupSubTree(), pokeCurrentSlot, "pk")
 			if pk == "" {
 				instWriteFmt(inst, `chat bcast ⚠ Poke lost target.`)
 				pokeCurrentSlot = -1
@@ -123,7 +123,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 				continue
 			}
 			if pokeCountdown == 0 {
-				slotValidateIP := roomStatusPlayerSlotToProperty(inst.RoomStatus.DupSubTree(), pokeCurrentSlot, "ip")
+				slotValidateIP := roomStatusPlayerSlotToPropertyString(inst.RoomStatus.DupSubTree(), pokeCurrentSlot, "ip")
 				if slotValidateIP != slotDataIP {
 					instWriteFmt(inst, `chat bcast ⚠ Poke lost target.`)
 					pokeCurrentSlot = -1
