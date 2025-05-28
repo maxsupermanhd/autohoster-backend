@@ -13,6 +13,7 @@ func instanceChatCommandHandlerPoke(inst *instance, args string, e chatCommandEx
 	}
 	select {
 	case inst.pokeRequests <- slotnum:
+		inst.logger.Printf("poke initiated")
 	default:
 		instWriteFmt(inst, `chat bcast ⚠ Failed to process poke!`)
 		return
