@@ -232,7 +232,7 @@ func roomStatusPlayerSlotToProperty(status lac.Conf, slotNum int, property strin
 	if !ok {
 		return ""
 	}
-	ret, ok := sla["property"].(string)
+	ret, ok := sla[property].(string)
 	if !ok {
 		return ""
 	}
