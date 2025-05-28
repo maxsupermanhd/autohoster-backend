@@ -237,8 +237,12 @@ func roomStatusPlayerSlotToPropertyString(status lac.Conf, slotSearching int, pr
 		}
 		slotNum, ok := plx["pos"].(int)
 		if !ok {
-			log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status", i)
-			continue
+			slotNumFloat, ok := plx["pos"].(float64)
+			if !ok {
+				log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status", i)
+				continue
+			}
+			slotNum = int(slotNumFloat)
 		}
 		if slotNum != slotSearching {
 			continue
