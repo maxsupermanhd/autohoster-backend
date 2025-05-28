@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -235,20 +236,15 @@ func roomStatusPlayerSlotToPropertyString(status lac.Conf, slotSearching int, pr
 			log.Printf("roomStatusPlayerSlotToPropertyString got non object in room status on index %d", i)
 			continue
 		}
-		slotNum, ok := plx["pos"].(int)
+		slotAny, ok := plx["pos"]
 		if !ok {
-			slotNumFloat64, ok := plx["pos"].(float64)
-			if !ok {
-				slotNumFloat32, ok := plx["pos"].(float32)
-				if !ok {
-					log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status", i)
-					continue
-				} else {
-					slotNum = int(slotNumFloat32)
-				}
-			} else {
-				slotNum = int(slotNumFloat64)
-			}
+			log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status because it does not exist", i)
+			continue
+		}
+		slotNum, ok := anyToInt(slotAny)
+		if !ok {
+			log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status because it is not a number", i)
+			continue
 		}
 		if slotNum != slotSearching {
 			continue
@@ -261,4 +257,26 @@ func roomStatusPlayerSlotToPropertyString(status lac.Conf, slotSearching int, pr
 		return ret
 	}
 	return ""
+}
+
+func anyToInt(a any) (int, bool) {
+	switch v := a.(type) {
+	case int:
+		return v, true
+	case int32:
+		return int(v), true
+	case int64:
+		return int(v), true
+	case float32:
+		return int(v), true
+	case float64:
+		return int(v), true
+	case json.Number:
+		ret, err := v.Int64()
+		if err != nil {
+			return 0, false
+		}
+		return int(ret), true
+	}
+	return 0, false
 }
