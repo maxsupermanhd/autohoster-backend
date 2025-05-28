@@ -61,7 +61,8 @@ func allocateNewInstance() (inst *instance, err error) {
 		OnJoinDispatch: map[string]joinDispatch{},
 		wg:             sync.WaitGroup{},
 		RoomStatus:     lac.NewConf(),
-		pokeRequests:   make(chan int),
+		pokeRequests:   make(chan int, 1),
+		pokeCancels:    make(chan string, 1),
 	}
 
 	instances = append(instances, inst)
