@@ -219,3 +219,22 @@ func base64DecodeFields(vs ...any) error {
 	}
 	return nil
 }
+
+func roomStatusPlayerSlotToProperty(status lac.Conf, slotNum int, property string) string {
+	pl, ok := status.GetSliceAny("players")
+	if !ok {
+		return ""
+	}
+	if slotNum < 0 || slotNum >= len(pl) {
+		return ""
+	}
+	sla, ok := pl[slotNum].(map[string]any)
+	if !ok {
+		return ""
+	}
+	ret, ok := sla["property"].(string)
+	if !ok {
+		return ""
+	}
+	return ret
+}

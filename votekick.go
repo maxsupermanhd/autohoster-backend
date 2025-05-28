@@ -24,13 +24,14 @@ var (
 	voteKickRestrictions = map[string]time.Time{}
 )
 
-func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHash string) {
+func voteKickOnCommand(inst *instance, args string, e chatCommandExecutor) {
+	targetHash := args
 	req := voteKickGetThreshold(inst)
 	if req == 0 {
 		instWriteFmt(inst, `chat bcast ⚠ Votekick is disabled in this room.`)
 		return
 	}
-	if !checkPkeyHasAccount(fromPkey) {
+	if !checkPkeyHasAccount(e.publicKey) {
 		instWriteFmt(inst, `chat bcast ⚠ Votekick avaliable only to registered and linked players.`)
 		instWriteFmt(inst, `chat bcast ⚠ Link your identity on https://wz2100-autohost.net/wzlink`)
 		return
@@ -61,9 +62,9 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 		return time.Until(v.when.Add(vlt)) <= 0
 	})
 
-	v, ok := voteKickVotes[fromIP]
+	v, ok := voteKickVotes[e.ip]
 	if !ok {
-		voteKickVotes[fromIP] = voteKickVote{
+		voteKickVotes[e.ip] = voteKickVote{
 			targetIP:   ip,
 			targetHash: targetHash,
 			when:       time.Now(),
@@ -78,7 +79,7 @@ func voteKickOnCommand(inst *instance, fromPkey []byte, fromIP string, targetHas
 			instWriteFmt(inst, `chat bcast ⚠ Please wait for %s to cast your next vote`, vtr)
 			return
 		}
-		voteKickVotes[fromIP] = voteKickVote{
+		voteKickVotes[e.ip] = voteKickVote{
 			targetIP:   ip,
 			targetHash: targetHash,
 			when:       time.Now(),

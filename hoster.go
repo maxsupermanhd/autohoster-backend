@@ -161,6 +161,11 @@ func instanceRunner(inst *instance) {
 	}()
 	wg.Add(1)
 	go func() {
+		pokeHosterRunner(inst, exitchan)
+		wg.Done()
+	}()
+	wg.Add(1)
+	go func() {
 		defer inst.logger.Println("stderr reader exited")
 		defer wg.Done()
 		bufSize := 1024 * 1024 * 64

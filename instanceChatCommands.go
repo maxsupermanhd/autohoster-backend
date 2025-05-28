@@ -1,141 +1,45 @@
 package main
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 )
 
+type chatCommandExecutor struct {
+	hash         string
+	name         string
+	ip           string
+	publicKey    []byte
+	publicKeyB64 string
+}
+
 func instanceChatCommandHandle(inst *instance, msg string, invhash, invb64pkey string, invpkey []byte, invname, invip string) {
+	e := chatCommandExecutor{
+		hash:         invhash,
+		name:         invname,
+		ip:           invip,
+		publicKey:    invpkey,
+		publicKeyB64: invb64pkey,
+	}
 	cmd, args := popWord(msg)
 	if cmd == "/stat" || cmd == "/stats" {
 		instWriteFmt(inst, `chat bcast Game history of Autohoster is available at the website: https://wz2100-autohost.net/games (with detailed statistics, charts and replay for download)`)
 	} else if cmd == "/hostmsg" {
-		processLinkingMessage(inst, invpkey, invb64pkey, invname, args)
+		processLinkingMessage(inst, args, e)
 	} else if cmd == "/votekick" {
-		voteKickOnCommand(inst, invpkey, invip, args)
+		voteKickOnCommand(inst, args, e)
 	} else if cmd == "/set" {
-		instanceChatCommandHandlerSet(inst, args, invhash, invb64pkey, invpkey, invname, invip)
+		instanceChatCommandHandlerSet(inst, args, e)
+	} else if cmd == "/poke" {
+		instanceChatCommandHandlerPoke(inst, args, e)
 	} else if cmd == "/help" {
-		instanceChatCommandHandlerHelp(inst, args, invhash, invb64pkey, invpkey, invname, invip)
+		instanceChatCommandHandlerHelp(inst, args, e)
 	}
 }
 
-func instanceChatCommandHandlerHelp(inst *instance, args string, invhash, invb64pkey string, invpkey []byte, invname, invip string) {
-	instWriteFmt(inst, `chat direct %s /votekick (Player ID: first 3 symbols) - initiates votekick for identity`, invb64pkey)
-	instWriteFmt(inst, `chat direct %s /set ... - [admin] configure the room preferences`, invb64pkey)
-}
-
-func instanceChatCommandHandlerSet(inst *instance, args string, invhash, invb64pkey string, invpkey []byte, invname, invip string) {
-	if !isHashInstanceAdmin(inst, invhash) {
-		instWriteFmt(inst, `chat bcast ⚠ You must be an instance admin to use /set command`)
-		return
-	}
-	type chatCommandArgument struct {
-		name string
-		t    string
-	}
-	type chatCommand struct {
-		name        string
-		description string
-		args        []chatCommandArgument
-		exec        func(args []any) string
-	}
-	chatCommands := []chatCommand{{
-		name:        "allowNonLinkedJoin",
-		description: "Allow/forbid non linked clients to join the lobby",
-		args: []chatCommandArgument{{
-			name: "allow",
-			t:    "bool",
-		}},
-		exec: func(args []any) string {
-			v := args[0].(bool)
-			inst.cfgs[0].Set(v, "allowNonLinkedJoin")
-			return fmt.Sprintf("☑ Top configuration layer value 'allowNonLinkedJoin' was set to %+#v", v)
-		},
-	}, {
-		name:        "allowNonLinkedPlay",
-		description: "Allow/forbid non linked clients to participate in game",
-		args: []chatCommandArgument{{
-			name: "allow",
-			t:    "bool",
-		}},
-		exec: func(args []any) string {
-			v := args[0].(bool)
-			inst.cfgs[0].Set(v, "allowNonLinkedPlay")
-			return fmt.Sprintf("☑ Top configuration layer value 'allowNonLinkedPlay' was set to %+#v", v)
-		},
-	}, {
-		name:        "allowNonLinkedChat",
-		description: "Allow/forbid non linked clients to use free chat",
-		args: []chatCommandArgument{{
-			name: "allow",
-			t:    "bool",
-		}},
-		exec: func(args []any) string {
-			v := args[0].(bool)
-			inst.cfgs[0].Set(v, "allowNonLinkedChat")
-			return fmt.Sprintf("☑ Top configuration layer value 'allowNonLinkedChat' was set to %+#v", v)
-		},
-	}}
-	type argumentParser func(arg string) (any, error)
-	argumentParsers := map[string]argumentParser{
-		"bool": func(arg string) (any, error) {
-			if arg == "true" || arg == "t" || arg == "1" {
-				return true, nil
-			} else if arg == "false" || arg == "f" || arg == "0" {
-				return false, nil
-			} else {
-				return nil, fmt.Errorf("expected 'true', 't', '1', 'false', 'f', '0' but found %q", arg)
-			}
-		},
-	}
-	showHelp := func() {
-		instWriteFmt(inst, `chat direct %s %s`, invb64pkey, "Allowed set parameters are:")
-		for _, v := range chatCommands {
-			instWriteFmt(inst, `chat direct %s %s`, invb64pkey, v.name+" "+v.description)
-			for i, a := range v.args {
-				instWriteFmt(inst, `chat direct %s %s`, invb64pkey, fmt.Sprintf("-    argument %d %s of type %s", i+1, a.name, a.t))
-			}
-		}
-	}
-	if args == "" {
-		showHelp()
-		return
-	}
-
-	cmd, args := popWord(args)
-
-	for _, c := range chatCommands {
-		if c.name != cmd {
-			continue
-		}
-		var argCont string
-		parsedArgs := []any{}
-		for i, a := range c.args {
-			argCont, args = popWord(args)
-			if argCont == "" {
-				instWriteFmt(inst, `chat bcast ⚠ Expected %d arguments but found %d. Use "/set" to get help.`, len(c.args), i)
-				return
-			}
-			parser, ok := argumentParsers[a.t]
-			if !ok {
-				instWriteFmt(inst, `chat bcast somebody forgor to implement argument parser of type %s lmao`, a.t)
-				return
-			}
-			val, err := parser(argCont)
-			if err != nil {
-				instWriteFmt(inst, `chat bcast Error parsing argument %d (%s): %s`, i+1, a.name, err.Error())
-				return
-			}
-			parsedArgs = append(parsedArgs, val)
-		}
-		ret := c.exec(parsedArgs)
-		instWriteFmt(inst, `chat bcast %s`, ret)
-		return
-	}
-
-	instWriteFmt(inst, `chat bcast ⚠ Set parameter %q not found. Use "/set" to get help.`, cmd)
+func instanceChatCommandHandlerHelp(inst *instance, args string, e chatCommandExecutor) {
+	instWriteFmt(inst, `chat direct %s /votekick (Player ID: first 3 symbols) - initiates votekick for identity`, e.publicKeyB64)
+	instWriteFmt(inst, `chat direct %s /set ... - [admin] configure the room preferences`, e.publicKeyB64)
 }
 
 func popWord(msg string) (part, rem string) {

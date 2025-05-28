@@ -236,6 +236,22 @@ var (
 			return false
 		},
 	}, {
+		match:   hosterMessageMatchTypePrefix,
+		mPrefix: "WZEVENT: readyStatus=",
+		fn: func(inst *instance, msg string) bool {
+			// WZEVENT: readyStatus=0: 14 3Ly9fTiY/YRkuu7r2ZCns/ZEYlU1bNyPDz3DUeFaaiA= dc2960759100a7ec4a5a81a21efcc8aa8682e40fd321a6ee6753d8c42f74700b V 4pSLVEjOnuKUi+KxvnVwcmVtZQ== 178.176.213.32
+			var msgreadystatus, msgplayerindex int
+			var msgb64pubkey, msghash, msgverified, msgb64name, msgip string
+			i, err := fmt.Sscanf(msg, "WZEVENT: readyStatus=%d: %d %s %s %s %s %s",
+				&msgreadystatus, &msgplayerindex, &msgb64pubkey, &msghash, &msgverified, &msgb64name, &msgip)
+			if err != nil || i != 7 {
+				inst.logger.Printf("Failed to parse event readyStatus: %v", err)
+				return true
+			}
+			inst.PokeCancels <- msgip
+			return false
+		},
+	}, {
 		match:   hosterMessageMatchTypePrefixSuffix,
 		mPrefix: "__REPORT__",
 		mSuffix: "__ENDREPORT__",
@@ -440,6 +456,7 @@ func messageHandlerProcessChat(inst *instance, msg string) bool {
 	if msgtype == "WZCHATCMD" {
 		instanceChatCommandHandle(inst, string(msgcontent), msghash, msgb64pubkey, msgpubkey, string(msgname), msgip)
 	}
+	inst.PokeCancels <- msgip
 	return false
 }
 
