@@ -23,6 +23,7 @@ func instanceChatCommandHandlerPoke(inst *instance, args string, e chatCommandEx
 func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 	lastPoke := time.Now()
 	pokeCurrentSlot := -1
+	pokeInitialCountdown := 15
 	pokeCountdown := -1
 	pokeTimer := time.NewTimer(1 * time.Second)
 	pokeTimer.Stop()
@@ -71,6 +72,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 				instWriteFmt(inst, `chat bcast ⚠ Poke is disabled in this room! (via countdown)`)
 				continue
 			}
+			pokeInitialCountdown = pokeCountdown
 			slotDataIP = roomStatusPlayerSlotToPropertyString(inst.RoomStatus.DupSubTree(), requestedSlot, "ip")
 			if slotDataIP == "" {
 				instWriteFmt(inst, `chat bcast ⚠ Poke failed to locate player.`)
@@ -149,10 +151,10 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 				slotDataIP = ""
 				continue
 			}
-			if pokeCountdown == 15 || pokeCountdown == 10 || pokeCountdown == 5 || pokeCountdown == 3 || pokeCountdown == 2 || pokeCountdown == 1 {
+			if pokeCountdown == pokeInitialCountdown || pokeCountdown%5 == 0 || pokeCountdown <= 3 {
 				instWriteFmt(inst, `chat bcast ⚠ Poke will kick slot %d for being afk in %d.`, pokeCurrentSlot, pokeCountdown)
 			}
-			instWriteFmt(inst, `chat direct %s ⚠ Poke will kick YOU for being afk in %d seconds!`, pk, pokeCountdown)
+			instWriteFmt(inst, `chat direct %s ⚠ Poke will kick YOU for being afk in %d seconds! (write in chat to show activity)`, pk, pokeCountdown)
 			pokeTimer.Stop()
 			select {
 			case <-pokeTimer.C:
