@@ -240,6 +240,9 @@ var (
 		mPrefix: "WZEVENT: readyStatus=",
 		fn: func(inst *instance, msg string) bool {
 			// WZEVENT: readyStatus=0: 14 3Ly9fTiY/YRkuu7r2ZCns/ZEYlU1bNyPDz3DUeFaaiA= dc2960759100a7ec4a5a81a21efcc8aa8682e40fd321a6ee6753d8c42f74700b V 4pSLVEjOnuKUi+KxvnVwcmVtZQ== 178.176.213.32
+			if msg == "WZEVENT: readyStatus=RESET" {
+				return false
+			}
 			var msgreadystatus, msgplayerindex int
 			var msgb64pubkey, msghash, msgverified, msgb64name, msgip string
 			i, err := fmt.Sscanf(msg, "WZEVENT: readyStatus=%d: %d %s %s %s %s %s",
