@@ -248,7 +248,10 @@ var (
 		// 			inst.logger.Printf("Failed to parse event readyStatus: %v", err)
 		// 			return true
 		// 		}
-		// 		inst.pokeCancels <- msgip
+		// 		select {
+		// 		case inst.pokeCancels <- msgip:
+		// 		default:
+		// 		}
 		// 		return false
 		// 	},
 	}, {

@@ -11,6 +11,10 @@ func instanceChatCommandHandlerPoke(inst *instance, args string, e chatCommandEx
 		instWriteFmt(inst, `chat bcast ⚠ Poke requires numerical player slot as argument!`)
 		return
 	}
+	if !checkPkeyHasAccount(e.publicKey) {
+		instWriteFmt(inst, `chat bcast ⚠ Poke is only available for registered players! (https://wz2100-autohost.net/register)`)
+		return
+	}
 	select {
 	case inst.pokeRequests <- slotnum:
 		inst.logger.Printf("poke initiated")
