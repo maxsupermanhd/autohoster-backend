@@ -39,6 +39,7 @@ func instanceChatCommandHandle(inst *instance, msg string, invhash, invb64pkey s
 
 func instanceChatCommandHandlerHelp(inst *instance, args string, e chatCommandExecutor) {
 	instWriteFmt(inst, `chat direct %s /votekick (Player ID: first 3 symbols) - initiates votekick for identity`, e.publicKeyB64)
+	instWriteFmt(inst, `chat direct %s /poke (slot number from 0) - [registered only] initiate afk kick countdown`, e.publicKeyB64)
 	instWriteFmt(inst, `chat direct %s /set ... - [admin] configure the room preferences`, e.publicKeyB64)
 }
 
