@@ -31,9 +31,23 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 	}
 	slotDataIP := ""
 	for {
+		if instanceState(inst.state.Load()) > instanceStateInLobby {
+			inst.logger.Printf("poker for %d exited because not in lobby state", inst.Pid)
+			pokeTimer.Stop()
+			select {
+			case <-pokeTimer.C:
+			default:
+			}
+			return
+		}
 		select {
 		case <-exitchan:
-			inst.logger.Printf("poker for %d exited", inst.Pid)
+			inst.logger.Printf("poker for %d exited to exitchan", inst.Pid)
+			pokeTimer.Stop()
+			select {
+			case <-pokeTimer.C:
+			default:
+			}
 			return
 		case requestedSlot := <-inst.PokeRequests:
 			if pokeCurrentSlot != -1 {
