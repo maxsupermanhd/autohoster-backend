@@ -237,19 +237,25 @@ func roomStatusPlayerSlotToPropertyString(status lac.Conf, slotSearching int, pr
 		}
 		slotNum, ok := plx["pos"].(int)
 		if !ok {
-			slotNumFloat, ok := plx["pos"].(float64)
+			slotNumFloat64, ok := plx["pos"].(float64)
 			if !ok {
-				log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status", i)
-				continue
+				slotNumFloat32, ok := plx["pos"].(float32)
+				if !ok {
+					log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status", i)
+					continue
+				} else {
+					slotNum = int(slotNumFloat32)
+				}
+			} else {
+				slotNum = int(slotNumFloat64)
 			}
-			slotNum = int(slotNumFloat)
 		}
 		if slotNum != slotSearching {
 			continue
 		}
 		ret, ok := plx[property].(string)
 		if !ok {
-			log.Printf("roomStatusPlayerSlotToPropertyString failed to get property of index %d in status because non string", i)
+			log.Printf("roomStatusPlayerSlotToPropertyString failed to get property %s of index %d in status because non string", property, i)
 			return ""
 		}
 		return ret
