@@ -185,8 +185,8 @@ func recoverLoad(p string) (*instance, error) {
 		OnJoinDispatch: map[string]joinDispatch{},
 		wg:             sync.WaitGroup{},
 		RoomStatus:     lac.NewConf(),
-		pokeRequests:   make(chan int, 1),
-		pokeCancels:    make(chan string, 1),
+		pokeRequests:   make(chan int, 20),
+		pokeCancels:    make(chan string, 20),
 	}
 	d := json.NewDecoder(bytes.NewReader(b))
 	d.UseNumber()

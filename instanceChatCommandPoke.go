@@ -82,6 +82,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 			default:
 			}
 			pokeTimer.Reset(time.Second)
+			lastPoke = time.Now()
 		case cancelIP := <-inst.pokeCancels:
 			if pokeCurrentSlot == -1 {
 				continue
@@ -147,7 +148,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 				slotDataIP = ""
 				continue
 			}
-			if pokeCountdown == 10 || pokeCountdown == 5 || pokeCountdown == 3 || pokeCountdown == 2 || pokeCountdown == 1 {
+			if pokeCountdown == 15 || pokeCountdown == 10 || pokeCountdown == 5 || pokeCountdown == 3 || pokeCountdown == 2 || pokeCountdown == 1 {
 				instWriteFmt(inst, `chat bcast ⚠ Poke will kick slot %d for being afk in %d.`, pokeCurrentSlot, pokeCountdown)
 			}
 			instWriteFmt(inst, `chat direct %s ⚠ Poke will kick YOU for being afk in %d seconds!`, pk, pokeCountdown)

@@ -456,7 +456,10 @@ func messageHandlerProcessChat(inst *instance, msg string) bool {
 	if msgtype == "WZCHATCMD" {
 		instanceChatCommandHandle(inst, string(msgcontent), msghash, msgb64pubkey, msgpubkey, string(msgname), msgip)
 	}
-	inst.pokeCancels <- msgip
+	select {
+	case inst.pokeCancels <- msgip:
+	default:
+	}
 	return false
 }
 
