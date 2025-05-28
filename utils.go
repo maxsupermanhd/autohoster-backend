@@ -229,13 +229,15 @@ func roomStatusPlayerSlotToPropertyString(status lac.Conf, slotSearching int, pr
 		return ""
 	}
 	// pastdue moment
-	for _, v := range pl {
+	for i, v := range pl {
 		plx, ok := v.(map[string]any)
 		if !ok {
+			log.Printf("roomStatusPlayerSlotToPropertyString got non object in room status on index %d", i)
 			continue
 		}
 		slotNum, ok := plx["pos"].(int)
 		if !ok {
+			log.Printf("roomStatusPlayerSlotToPropertyString failed to get pos of index %d in status", i)
 			continue
 		}
 		if slotNum != slotSearching {
@@ -243,6 +245,7 @@ func roomStatusPlayerSlotToPropertyString(status lac.Conf, slotSearching int, pr
 		}
 		ret, ok := plx[property].(string)
 		if !ok {
+			log.Printf("roomStatusPlayerSlotToPropertyString failed to get property of index %d in status because non string", i)
 			return ""
 		}
 		return ret
