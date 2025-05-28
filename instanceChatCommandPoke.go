@@ -12,7 +12,7 @@ func instanceChatCommandHandlerPoke(inst *instance, args string, e chatCommandEx
 		return
 	}
 	select {
-	case inst.PokeRequests <- slotnum:
+	case inst.pokeRequests <- slotnum:
 	default:
 		instWriteFmt(inst, `chat bcast ⚠ Failed to process poke!`)
 		return
@@ -49,7 +49,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 			default:
 			}
 			return
-		case requestedSlot := <-inst.PokeRequests:
+		case requestedSlot := <-inst.pokeRequests:
 			if pokeCurrentSlot != -1 {
 				instWriteFmt(inst, `chat bcast ⚠ Poke for slot %d is ongoing!`, pokeCurrentSlot)
 				continue
@@ -81,7 +81,7 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 			default:
 			}
 			pokeTimer.Reset(time.Second)
-		case cancelIP := <-inst.PokeCancels:
+		case cancelIP := <-inst.pokeCancels:
 			if pokeCurrentSlot == -1 {
 				continue
 			}

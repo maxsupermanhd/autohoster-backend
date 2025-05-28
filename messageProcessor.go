@@ -248,7 +248,7 @@ var (
 				inst.logger.Printf("Failed to parse event readyStatus: %v", err)
 				return true
 			}
-			inst.PokeCancels <- msgip
+			inst.pokeCancels <- msgip
 			return false
 		},
 	}, {
@@ -456,7 +456,7 @@ func messageHandlerProcessChat(inst *instance, msg string) bool {
 	if msgtype == "WZCHATCMD" {
 		instanceChatCommandHandle(inst, string(msgcontent), msghash, msgb64pubkey, msgpubkey, string(msgname), msgip)
 	}
-	inst.PokeCancels <- msgip
+	inst.pokeCancels <- msgip
 	return false
 }
 

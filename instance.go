@@ -77,6 +77,6 @@ type instance struct {
 	commands            chan instanceCommand
 	wg                  sync.WaitGroup
 	StagingGraphs       []gamereport.GameReportGraphFrame
-	PokeRequests        chan int
-	PokeCancels         chan string
+	pokeRequests        chan int
+	pokeCancels         chan string
 }
