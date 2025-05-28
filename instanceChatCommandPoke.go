@@ -62,7 +62,8 @@ func pokeHosterRunner(inst *instance, exitchan chan struct{}) {
 			}
 			sinceLastPoke := time.Since(lastPoke)
 			if sinceLastPoke < time.Duration(cooldownSeconds)*time.Second {
-				instWriteFmt(inst, `chat bcast ⚠ Poke is on cooldown! (available in %s)`, (time.Duration(cooldownSeconds)*time.Second - sinceLastPoke).String())
+				pokeEta := (time.Duration(cooldownSeconds)*time.Second - sinceLastPoke).Round(time.Second)
+				instWriteFmt(inst, `chat bcast ⚠ Poke is on cooldown! (available in %s)`, pokeEta.String())
 				continue
 			}
 			pokeCountdown = tryCfgGetD(tryGetIntGen("pokeCountdownSeconds"), 15, inst.cfgs...)
