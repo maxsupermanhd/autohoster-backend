@@ -164,6 +164,13 @@ func instanceRunner(inst *instance) {
 		pokeHosterRunner(inst, exitchan)
 		wg.Done()
 	}()
+	if inst.Origin == "requested" && instanceState(inst.state.Load()) <= instanceStateInLobby {
+		wg.Add(1)
+		go func() {
+			runnerRoutineRequestedWatchdog(inst, exitchan)
+			wg.Done()
+		}()
+	}
 	wg.Add(1)
 	go func() {
 		defer inst.logger.Println("stderr reader exited")
@@ -308,6 +315,47 @@ msgloop:
 	inst.logger.Println("Runner exits")
 	inst.logger.Printf("atomic state store: %d", int64(instanceStateExited))
 	inst.state.Store(int64(instanceStateExited))
+}
+
+func runnerRoutineRequestedWatchdog(inst *instance, exitchan chan struct{}) {
+	for {
+		select {
+		case <-exitchan:
+			inst.logger.Printf("requested room watchdog exited for exitchan")
+			return
+		default:
+		}
+		if instanceState(inst.state.Load()) >= instanceStateInGame {
+			inst.logger.Printf("requested room watchdog exited for ingame")
+			return
+		}
+		if inst.Id+600 < time.Now().Unix() {
+			// too early to kill it
+			return
+		}
+		rs := inst.RoomStatus.DupSubTree()
+		foundPlayer := false
+		for slotNum := range 10 {
+			if roomStatusPlayerSlotToPropertyString(rs, slotNum, "type") == "player" {
+				foundPlayer = true
+			}
+		}
+		if !foundPlayer {
+			inst.logger.Printf("requested room watchdog found no players in the room and proceeds to kill it")
+			discordPostError("instance %d was killed by request watchdog", inst.Id)
+			select {
+			case inst.commands <- instanceCommand{
+				command: icShutdown,
+				data:    nil,
+			}:
+				inst.logger.Printf("requested room watchdog sent shutdown")
+			default:
+				inst.logger.Printf("requested room watchdog failed to send shutdown signal")
+			}
+			return
+		}
+		time.Sleep(3 * time.Second)
+	}
 }
 
 func DbLogAction(f string, args ...any) (string, error) {

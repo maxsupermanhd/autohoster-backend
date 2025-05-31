@@ -135,6 +135,7 @@ func webHandleRequestRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gi.QueueName = ""
+	gi.Origin = "requested"
 	go spawnRunner(gi)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf("Room created, join with host.wz2100-autohost.net:%d", gi.Settings.GamePort)))

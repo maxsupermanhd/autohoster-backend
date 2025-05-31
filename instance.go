@@ -58,6 +58,7 @@ type instance struct {
 	BinPath             string
 	Admins              []string
 	AdminsPolicy        adminsPolicy
+	Origin              string
 	OnJoinDispatch      map[string]joinDispatch
 	QueueName           string
 	AutodetectedVersion string

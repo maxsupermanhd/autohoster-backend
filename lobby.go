@@ -94,6 +94,7 @@ func populateLobby(lr []lobby.LobbyRoom) {
 			continue
 		}
 		gi.QueueName = queueName
+		gi.Origin = "queue"
 		// log.Printf("Generated instance: %s", spew.Sdump(gi))
 		go spawnRunner(gi)
 	}
